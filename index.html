@@ -5,21 +5,36 @@
 <meta name="author" content="draho.cz">
 <title>Pexeso</title>
 <style>
+html {
+	height: 100%;
+}
 body {
-	padding: 3px;
+	padding: 0;
 	margin: 0;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 	background: #a8abbb;
+	background: linear-gradient(0deg, #6f6f6f, #dadada00) fixed;
 	font-family: Arial;
 	text-align: center;
 }
+canvas.wait, canvas.clickable.wait {
+	cursor: wait;
+}
+canvas.clickable {
+	cursor: pointer;
+}
+
 #storno {
 	display: none;
 }
 #form {
-	margin: 64px auto;
-	width: 280px;
-	text-align: left;
+	margin: 64px auto 192px;
+	width: 340px;
 }
+
 footer {
 	position: fixed;
 	right: 10px;
@@ -28,6 +43,12 @@ footer {
 a {
 	color: #111;
 }
+button, input, select {
+	padding: 0.5em 0.75em;
+	cursor: pointer;
+	border-radius: 6px;
+	border: 1px solid;
+}
 
 </style>
 <script>
@@ -35,31 +56,33 @@ function $(id){
 	return document.getElementById(id);
 }
 
-var img = new Image;
-img.src = 'img/0.png';
+var img = new Image();
+img.src = 'img/alik.min.png';
 
 function Pexeso(id, size, mode, diff){
 	var SINGLE = 0, PC = 1; // mody
-	var DIFFS = [0, 16, 32, 64, 100];
+	var DIFFS = [0, 16, 32, 56, 80];
 	var myTurn = 1;
 	var status = 0;  // počet aktuálně otočených karet
 	var lastI;
 	var lock = 0;
 	var matches = [0,0]; // score
 	var cn = document.createElement("canvas");
-	var sp = 2; //spacing
-	var edge = img.height+2*sp; // hrana karty
+	var sp = 3; //spacing
+	var imgHeight = 108
+	var edge = imgHeight+2*sp; // hrana karty
 	var top = 64; // místo nahoře
 	var side = 256; // místo po stranách
 	cn.width = size*edge+side*2;
 	cn.height = size*edge+top*2;
 	$(id).appendChild(cn);
 	var ctx = cn.getContext('2d');
+	ctx.imageSmoothingQuality = "high"
 	ctx.translate(side,top);
 
 	/* nadepsat jména */
-	var name1 = "You";
-	var name2 = mode==PC?["pc *","pc * *","pc * * *","pc * * * *","pc * * * * *"][diff]:"";
+	var name1 = "Ty";
+	var name2 = mode==PC?["pc ⭑","pc ⭑⭑","pc ⭑⭑⭑","pc ⭑⭑⭑⭑","pc ⭑⭑⭑⭑⭑"][diff]:"";
 	ctx.font = "20px Arial"
 	ctx.textAlign = "left";
 	ctx.fillText (name1, 15-side, 37-top);
@@ -67,12 +90,17 @@ function Pexeso(id, size, mode, diff){
 	ctx.fillText (name2, size*edge+side-15, 37-top);
 
 	/* připravit karty */
-	var tarr = [], cards = [], mCards = [];
-	for(var i=0;i<32;i++)
-		tarr[i] = i;
-	tarr.sort(function(){ return rand(2) - 0.5 }); //promíchá všechny
-	for(var i=0;i<size*size/2;i++)
-		cards[2*i] = cards[2*i+1] = tarr[i]; // vybere prvních několik do hry
+	var hat = [], cards = [], mCards = [];
+	for(var i=0;i<32;i++) { // nahazet náhodně obrazky do klobouku
+		do {
+			var card = rand(32)
+		} while(hat.includes(card))
+		hat.push(card);
+	}
+	 //promíchá všechny
+	for(var i=0;i<size*size/2;i++) {
+		cards[2*i] = cards[2*i+1] = hat[i]; // vybere prvních několik do hry
+	}
 	cards.sort(function(){ return rand(2) - 0.5 }); //promíchá dvojce na stole
 	for(var i=0;i<size*size;i++)
 		mCards[i] = -2; // -2 => neotočené
@@ -99,9 +127,10 @@ function Pexeso(id, size, mode, diff){
 		ctx.fillText (matches[1]+" : "+matches[0], size*edge/2, 37-top); //skore
 	}
 	function drawCard(card, x, y){ //x,y absolutně v px
-		var e = edge-2*sp //hrana obrazku
-		ctx.drawImage(img, 33*e, 0, e, e, x+sp, y+sp, e, e); // podklad
-		ctx.drawImage(img, card*e, 0, e, e, x+sp, y+sp, e, e);
+		var e = edge-2*sp // vysledna hrana obrazku
+		var ee = img.height // fyzicka hrana obrazku
+		ctx.drawImage(img, 33*ee, 0, ee, ee, x+sp, y+sp, e, e); // podklad
+		ctx.drawImage(img, card*ee, 0, ee, ee, x+sp, y+sp, e, e);
 	}
 
 	function move(i){
@@ -130,6 +159,7 @@ function Pexeso(id, size, mode, diff){
 			if(mode==PC){
 				myTurn = !myTurn*1;
 				lock = 1;
+				cn.classList.add('wait')
 				setTimeout(fold,2000-diff*250)
 			}
 		}
@@ -140,12 +170,13 @@ function Pexeso(id, size, mode, diff){
 	function fold(){ // otočit z5
 		status = 0;
 		lock = 0;
+		cn.classList.remove('wait')
 		lastI = -1;
 		drawGrid();
 		if(isEnd()){ // konec
-			var txt = "remis";
-			if(matches[0]>matches[1]) txt = "you lose";
-			if(matches[0]<matches[1]) txt = "you win!";
+			var txt = "Remíza!";
+			if(matches[0]>matches[1]) txt = "Prohráváš";
+			if(matches[0]<matches[1]) txt = "Vyhráváš!";
 			ctx.font = "40px Arial"
 			ctx.textAlign = "center";
 			ctx.fillText (txt, size*edge/2, size*edge/2);
@@ -216,6 +247,9 @@ function Pexeso(id, size, mode, diff){
 	function getCursorPosition(e) {
 		var x = e.pageX - e.target.offsetLeft - side;
 		var y = e.pageY - e.target.offsetTop - top;
+		if (x % edge < sp || y % edge < sp || x % edge >= edge - sp || y % edge >= edge - sp) { // spacing
+			return { x: -1, y: -1}
+		}
 	 	return {
 			x: Math.floor(x/edge),
 			y: Math.floor(y/edge)
@@ -242,14 +276,15 @@ function Pexeso(id, size, mode, diff){
 		var coord = getCursorPosition(e);
 		var x = coord.x, y = coord.y;
 		if(isClicable(x,y))
-			cn.style.cursor = 'pointer';
+			cn.classList.add('clickable');
 		else
-			cn.style.cursor = 'default';
+			cn.classList.remove('clickable');
 	}
 }
 
 window.onload = function(){
-	$('form').onsubmit = function(){
+	$('form').onsubmit = function(e){
+		e.preventDefault()
 		this.style.display = 'none';
 		$('storno').style.display = 'inline';
 		var size = this.size.value;
@@ -272,26 +307,29 @@ window.onload = function(){
 </head>
 <body>
 <form id=form>
+	<h2>Pexeso</h2>
 	<select id=size>
 		<option value=4>4×4</option>
 		<option value=6 selected>6×6</option>
 		<option value=8>8×8</option>
 	</select>
 	<select id=mode>
-		<option value=0>training</option>
-		<option value=1 selected>p vs. pc</option>
+		<option value=0>trénink</option>
+		<option value=1 selected>proti PC</option>
 	</select>
 	<select id=diff>
-		<option value=0>peaceful</option>
-		<option value=1>easy</option>
-		<option value=2 selected>medium</option>
-		<option value=3>hard</option>
-		<option value=4>extreme</option>
+		<option value=0>poklidné</option>
+		<option value=1>lehké</option>
+		<option value=2 selected>běžné</option>
+		<option value=3>těžké</option>
+		<option value=4>extrémní</option>
 	</select>
-	<button>play!</button>
+	<button>Hrát!</button>
 </form>
 <div id=box></div>
-<button id=storno>storno</button>
-<footer>by <a href="http://draho.cz/" target=_blank>Draho</a></footer>
+<div>
+	<button id=storno>Zrušit</button>
+</div>
+<footer>© <a href="http://draho.cz/" target=_blank>Draho</a></footer>
 </body>
 </html>
