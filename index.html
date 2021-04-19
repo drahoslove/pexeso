@@ -57,7 +57,10 @@ function $(id){
 }
 
 var img = new Image();
-img.src = 'img/alik.min.png';
+img.src = {
+	'#alik': 'img/alik.min.png',
+	"#1": 'img/1.png',
+}[window.location.hash] || 'img/0.png';
 
 function Pexeso(id, size, mode, diff){
 	var SINGLE = 0, PC = 1; // mody
