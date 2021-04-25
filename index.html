@@ -1,0 +1,464 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pexeso</title>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #2a455a;
+  background-image: url('img/dark-denim-3.png');
+}
+.table {
+  width: 1250px;
+  height: 781px;
+  margin: 0 auto;
+  display: flex;
+  border-radius: 2em;
+  background-color: #56776a;
+  background-image: url('img/pool-table.png');
+  box-shadow: inset 0 0 0 12px #613131, inset 2px 2px 6px 15px #333, 4px 10px 40px #000;
+  position: relative;
+  font-size: 1.75rem;
+  font-family: monospace;
+  color: #fff;
+  overflow: hidden;
+}
+
+.table::before, .table::after {
+  content: '';
+  width: 0;
+  position: absolute;
+  top: 25px;
+  bottom: 25px;
+  border-color: #fffb;
+  border-width: 6px;
+}
+
+.table::before {
+  border-right-style: solid;
+  left:  18.5%;;
+}
+.table::after {
+  border-left-style: solid;
+  right:  18.5%;;
+}
+
+/* menu */
+
+.menu, .board {
+  transition: 0.25s ease;
+}
+*[hidden=true] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin: 0;
+  display: grid;
+  flex: 1;
+  grid-template-columns: 30px 180px auto 250px 250px auto 180px 30px;
+  grid-template-rows: 30px  auto 150px 150px 50px 50px auto 30px;
+  width: 100%;
+}
+
+.menu .header {
+  grid-column: 4 / span 2;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu .left {
+  grid-column: 4 / span 2;
+  grid-row: 3;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu .right {
+  grid-column: 4 / span 2;
+  grid-row: 4;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu .mid {
+  grid-column: 4 / span 2;
+  grid-row: 5 / span 1;
+  display: flex;
+  justify-content: center;
+}
+
+.left-buttons, .right-buttons {
+  display: flex;
+  grid-row: 3 / span 4;
+  flex-direction: column;
+  justify-content: center;
+}
+.left-buttons {
+  grid-column: 2;
+}
+.right-buttons {
+  grid-column: 7;
+}
+
+h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  text-shadow: 2px ​2px 4px #333;
+}
+
+label {
+  font-size: 1.4rem;
+  margin: 0.5rem 0.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+}
+
+.form-group>* {
+  flex: 1 0 200px;
+}
+
+select, button {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  color: #56776a;
+}
+select {
+  border-right: 10px #fff solid;
+}
+.mid button {
+  font-weight: bold;
+  font-size: 1.1rem;
+  width: 100px;
+  text-align: center;
+  color: #2b3b35;
+  font-family: sans-serif;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+
+/* board */
+
+.board {
+  opacity: 1;
+  --card-height: 90px;
+  --card-width: 90px;
+  --size: 94px;
+  --p: 20px;
+  width: 0;
+  height: 0;
+  margin: auto;
+  background: #ddd;
+  position: absolute;
+  perspective: 2000px;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transition: opacity 1s ease;
+}
+
+.pile-frame, .user-name {
+  position: absolute;
+
+  width: calc(var(--size) + var(--p));
+  height: calc(var(--size) + var(--p));
+  margin: calc((var(--size) + var(--p)) / -2 ) calc((var(--size) + var(--p)) / -2 );
+
+  top: calc(var(--y) * var(--size));
+  left: calc(var(--x) * var(--size));
+}
+
+.pile-frame {
+  border-radius: 0.8em;
+  box-shadow: 0 0 0 6px #fffb;
+}
+
+.user-name {
+  text-align: center;
+  line-height: calc(var(--size) * 1.2);
+  /* overflow: hidden; */
+  text-overflow: ellipsis;
+}
+
+.user-name::after, .user-name::before {
+  position: absolute;
+  width: 151px;
+  height: 60px;
+  font-size: 3rem;
+  color: #fffb;
+}
+.user-name.highlighted::after {
+  content: '◄';
+  left: 78px;
+}
+.user-name.highlighted::before {
+  content: '►';
+  right: 78px;;
+}
+
+.card {
+  /* backend 0-31 = faces; 32 - back */
+  opacity: 1;
+  --image: 32; 
+  --y: 0;
+  --x: 0;
+  --elevation: 1;
+  --p: 10px;
+  position: absolute;
+  z-index: var(--elevation);
+
+  margin: calc(var(--card-width) / -2) calc(var(--card-width) / -2);
+  width: var(--card-width);
+  height: var(--card-height);
+  top: calc(var(--y) * (var(--card-height) + var(--p)) - 0.5px * var(--elevation));
+  left: calc(var(--x) * (var(--card-width) + var(--p)));
+
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease
+    , left calc(var(--elevation) * 0.01s + 0.1s) ease
+    , top calc(var(--elevation) * 0.01s + 0.1s) ease;
+}
+
+.card.rotated {
+  transform: rotateY(180deg);
+}
+
+.card::before, .card::after {
+  background-color: white;
+  border: 0.5px #888 solid;
+  border-radius: 5pt;
+  box-shadow: calc(0px + 1px * var(--elevation)) calc(4px/4* var(--elevation)) calc(6px/8 * var(--elevation)) 0px rgba(32, 32, 32, calc( 0.7 - var(--elevation)/40));
+  transition: box-shadow 0.1s ease;
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-image: url('img/alik.min.png');
+  background-size: cover;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+.card::after {
+  background-position-x: calc(100% / 33 * 32);
+  z-index: -1;
+}
+.card::before {
+  background-position-x: calc(100% / 33 * var(--image));
+  transform: rotateY(180deg);
+}
+
+
+.card:hover {
+  --elevation: 5;
+  cursor: pointer;
+}
+</style>
+<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+<script src="js/tools.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pexeso.js"></script>
+
+</head>
+<body>
+<div id="app" class="table">
+  <form class="menu">
+    <div class="header">
+      <h1>Pexeso</h1>
+    </div>
+    <div class="left">
+      <label>Hráči</label>
+      <div class="form-group">
+        <select name="player1" id="player1">
+          <option value="user" selected>👤 Ty</option>
+          <option value="bot1">🤖 Robot ¹</option>
+          <option value="bot2">🤖 Robot ²</option>
+          <option value="bot3">🤖 Robot ³</option>
+          <option value="bot4">🤖 Robot ⁴</option>
+          <option value="bot5">🤖 Robot ⁵</option>
+          <option value="none">⛔ Nikdo</option>
+        </select>
+        <select name="player2" id="player2">
+          <option value="user">👤 Ty</option>
+          <option value="bot1">🤖 Robot ¹</option>
+          <option value="bot2">🤖 Robot ²</option>
+          <option value="bot3" selected>🤖 Robot ³</option>
+          <option value="bot4">🤖 Robot ⁴</option>
+          <option value="bot5">🤖 Robot ⁵</option>
+          <option value="none">⛔ Nikdo</option>
+        </select>
+        <select name="player3" id="player4">
+          <option value="user">👤 Ty</option>
+          <option value="bot1">🤖 Robot ¹</option>
+          <option value="bot2">🤖 Robot ²</option>
+          <option value="bot3">🤖 Robot ³</option>
+          <option value="bot4">🤖 Robot ⁴</option>
+          <option value="bot5">🤖 Robot ⁵</option>
+          <option value="none" selected>⛔ Nikdo</option>
+        </select>
+        <select name="player4" id="player3">
+          <option value="user">👤 Ty</option>
+          <option value="bot1">🤖 Robot ¹</option>
+          <option value="bot2">🤖 Robot ²</option>
+          <option value="bot3">🤖 Robot ³</option>
+          <option value="bot4">🤖 Robot ⁴</option>
+          <option value="bot5">🤖 Robot ⁵</option>
+          <option value="none" selected>⛔ Nikdo</option>
+        </select>
+      </div>
+    </div>
+    <div class="right">
+      <label for="grid-size">Karty</label>
+      <select name="grid-size" id="grid-size">
+        <option value="4×2">4 × 2</option>
+        <option value="4×4">4 × 4</option>
+        <option value="6×4">6 × 4</option>
+        <option value="6×6" selected>6 × 6</option>
+        <option value="8×6">8 × 6</option>
+        <option value="8×8">8 × 8</option>
+      </select>
+    </div>
+    <div class="mid">
+      <button id="play-button" type="button">Hrát!</button>
+    </div>
+  </form>
+  <form class="menu" hidden='true'>
+    <div class="left-buttons">
+      <button id="reset-button" type="button" disabled="true">
+        Zabalit
+      </button>
+    </div>
+    <div class="right-buttons">
+      <button id="shuffle-button" type="button" disabled="true">
+        Zamíchat
+      </button>
+    </div>
+  </form>
+</div>
+<script>
+
+
+const pexeso = new Pexeso()
+
+let board
+let game
+
+let isFirst = true
+
+const menus = $$('.menu')
+
+$('#shuffle-button').onclick = async(e) => {
+  e.preventDefault()
+  e.target.disabled = true
+  $('#reset-button').disabled = true
+
+  await board.shuffle(false)
+  e.target.disabled = false
+  $('#reset-button').disabled = false
+}
+
+$('#reset-button').onclick = async (e) => {
+  e.target.disabled = true
+  $('#shuffle-button').disabled = true
+
+  await board.pack(false)
+  board.el.style.setProperty('opacity', 0)
+  await wait(250)
+  menus[0].setAttribute('hidden', false)
+  menus[1].setAttribute('hidden', true)
+  await wait(500)
+  game.end()
+  board.destroy()
+}
+
+$('#play-button').onclick = async (e) => {
+  e.preventDefault()
+  // init game logic
+  const [w, h] = $('#grid-size').value.split('×').map(Number)
+  const players = [1,2,3,4].map(n => $(`#player${n}`).value)
+
+  const onUpdate = (data) => {
+    const {x, y, image, fold, pile, user } = data
+    if (user !== undefined) {
+      board.highlightUser(user)
+      return
+    }
+    if (x !== undefined && y !== undefined) {
+      const card = board.cardAt(x, y)
+      if  (image !== undefined) {
+        card.flip(image)
+      }
+      if (fold === true) {
+        card.fold()
+      }
+      if (pile !== undefined) {
+        card.toPile(pile)
+      }
+    }
+  }
+
+  game = await pexeso.newGame(w, h, players, onUpdate)
+
+  // init board ui
+  const humans = players.filter(p => p === 'user').length
+  let conter = 0
+  const playerNames = players
+    .map((p, i) => {
+      if (p === 'none') return ''
+      if (p === 'user') return humans === 1 ? 'Ty' : `Hráč ${++conter}`
+      return  p.replace('bot', 'Robot ') 
+    })
+  const onClick = (card) => {
+    const {x, y} = card
+    game.tryCard(x, y)
+  }
+
+  board = new Board($('#app'), w, h, playerNames, onClick)
+
+  menus[0].setAttribute('hidden', true)
+  menus[1].setAttribute('hidden', false)
+
+  // await board.wave()
+  await board.pack(true)
+  await board.unpack()
+  if (isFirst) {
+    await board.shuffle()
+    isFirst = false
+  }
+  $('#reset-button').disabled = false
+  $('#shuffle-button').disabled = false
+  await wait(200)
+  game.start()
+}
+
+  
+
+</script>
+</body>
+</html>
