@@ -15,6 +15,9 @@ const ondemandRandomList = (values) => {
   let known = []
   return new Proxy(known, {
     get: (list, i) => {
+      if (i === 'length') {
+        return values.length + known.length
+      }
       if (!(i in known)) {
         values.sort(randomize)
         known[i] = values.pop()

@@ -250,43 +250,37 @@ class Board {
   }
 
 
-  async wave () {
+  async reveal (trueImages, unreveal) {
     const {w,h} = this
 
-    await Promise.all([
-      new Promise((resolve) => {
-        setTimeout(async() => {
-          for (let i = 0; i<2*h+w; i++) {
-            for (let j = 0; j<2*w+h; j++) {
-              const y = j;
-              const x = i-y;
-              if (y >= 0 && y <h && x >= 0 && x <w) {
-                this.cardAt(x,y).flip(((y+1)*(x+1)+1)%32) //.flip(((i+1)*j+i) % 32)
-                await wait(5)
-              }
-            }
-            await wait(50)
-            resolve()
+    if (!unreveal) {
+      for (let i = 0; i<2*h+w; i++) {
+        for (let j = 0; j<2*w+h; j++) {
+          const y = j;
+          const x = i-y;
+          if (y >= 0 && y <h && x >= 0 && x <w) {
+            this.cardAt(x,y).flip(trueImages
+              ? trueImages[y*w + x % trueImages.length]
+              : (y+(x*h))%32
+            ) //.flip(((i+1)*j+i) % 32)
+            await wait(5)
           }
-        }, 100)
-      }),
-      new Promise((resolve) => {
-        setTimeout(async() => {
-          for (let i = 0; i<h+w; i++) {
-            for (let j = 0; j<w+h; j++) {
-              const y = j;
-              const x = i-y;
-              if (y >= 0 && y <h && x >= 0 && x <w) {
-                this.cardAt(x,y).fold()
-                await wait(5)
-              }
-            }
-            await wait(50)
+        }
+        await wait(50)
+      }
+    } else {
+      for (let i = 0; i<h+w; i++) {
+        for (let j = 0; j<w+h; j++) {
+          const y = j;
+          const x = i-y;
+          if (y >= 0 && y <h && x >= 0 && x <w) {
+            this.cardAt(x,y).fold()
+            await wait(5)
           }
-          resolve()
-        }, 750)
-      }),
-    ])
+        }
+        await wait(50)
+      }
+    }
   }
 
   async shuffle (noReposition=true) {

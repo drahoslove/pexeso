@@ -54,9 +54,8 @@ class Pexeso {
         }
       },
       start: game.start.bind(game),
-      end: () => {
-        game.end()
-      },
+      end: game.end.bind(game),
+      givup: game.givup.bind(game), // TODO merge with end?
     }
   }
 }
@@ -275,6 +274,12 @@ class Game { // TODO move this to the server
   end() { // TODO
     this.emit({
       end: true,
+    })
+  }
+
+  givup() {
+    this.emit({
+      images: [...this.cardImages],
     })
   }
 

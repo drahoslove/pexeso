@@ -387,6 +387,11 @@ $('#reset-button').onclick = async (e) => {
   e.target.disabled = true
   $('#shuffle-button').disabled = true
 
+  if (isFirst) {
+    game.givup()
+    await wait(1200) // wait for reveal
+    isFirst = false
+  }
   await board.pack(false)
   board.el.style.setProperty('opacity', 0)
   await wait(250)
@@ -404,7 +409,11 @@ $('#play-button').onclick = async (e) => {
   const players = [1,2,3,4].map(n => $(`#player${n}`).value)
 
   const onUpdate = (data) => {
-    const {x, y, image, fold, pile, user } = data
+    const {x, y, image, fold, pile, user, images } = data
+    if (images) {
+      board.reveal(images)
+      return
+    }
     if (user !== undefined) {
       board.highlightUser(user)
       return
@@ -444,12 +453,14 @@ $('#play-button').onclick = async (e) => {
   menus[0].setAttribute('hidden', true)
   menus[1].setAttribute('hidden', false)
 
-  // await board.wave()
+  // await board.wave(false)
   await board.pack(true)
   await board.unpack()
   if (isFirst) {
+    board.reveal()
+    await wait(500)
+    await board.reveal(null, true)
     await board.shuffle()
-    isFirst = false
   }
   $('#reset-button').disabled = false
   $('#shuffle-button').disabled = false
