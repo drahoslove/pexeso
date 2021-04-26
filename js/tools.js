@@ -11,3 +11,15 @@ const wait = async (t) => new Promise((resolve) => {
 const $ = document.querySelector.bind(document)
 const $$ = document.querySelectorAll.bind(document)
 
+const ondemandRandomList = (values) => {
+  let known = []
+  return new Proxy(known, {
+    get: (list, i) => {
+      if (!(i in known)) {
+        values.sort(randomize)
+        known[i] = values.pop()
+      } 
+      return known[i]
+    },
+  })
+}

@@ -40,7 +40,7 @@ class Pexeso {
       }
     })
 
-    new AutoBackfliper(game, 1500)
+    new AutoBackfliper(game, 2500)
 
     return { // return set of public methods
       tryCard: (x, y) => {
@@ -88,7 +88,7 @@ const UNDISCOVERED = undefined
 const PILED = null
 class Bot {
   static levelToDifficulty(level) {
-    return [0, 16, 32, 56, 80][level] || 100
+    return [4, 16, 32, 52, 76][level] || 100
   }
   constructor(level, id, game) {
     this.level = level
@@ -109,6 +109,9 @@ class Bot {
         this.iPlay = user === id
       }
       if (card !== undefined) {
+        if(this.iPlay) {
+          this.moves++
+        }
         if (image !== undefined) {
           this.mem[card] = image
         }
@@ -128,16 +131,18 @@ class Bot {
       clearTimeout(this.willPlay)
       this.willPlay = null
       if (this.iPlay) {
+        const delay = (this.moves % 4 === 2)
+          ? 500 + 2500/level // after second card (750-3000)
+          : 200 + 500/level // between cards (300 - 700)
         this.willPlay = setTimeout(() => {
           this.play()
-        }, pile !== undefined ? 1200 : 750)
+        }, delay)
       }
     })
   }
 
   play() {
-    this.moves++
-    if (this.moves % 3 === 0) {
+    if (this.moves % 4 === 2) {
       this.game.checkPair()
       return
     }
@@ -242,11 +247,9 @@ class Game { // TODO move this to the server
       .filter((_, i) => i < size / 2) // pick subset of images
     
     // mapping of cards to images
-    const cardImages = [...pickedImages, ...pickedImages]
-      .sort(randomize)
-      .sort(randomize)
-      .sort(randomize)
-    const cardStates = cardImages.map((() => 0 ))
+    const allCards = [...pickedImages, ...pickedImages]
+    const cardImages = ondemandRandomList(allCards)
+    const cardStates = allCards.map((() => 0 ))
 
     this.cardImages = cardImages
     this.cardStates = cardStates
