@@ -61,7 +61,7 @@ class Pexeso {
 }
 
 class AutoBackfliper {
-  constructor(game, timeout=1500) {
+  constructor(game, timeout) {
     this.timer
     this.flipCounter = 0
     game.onUpdate(({i, image, user, end}) => {
@@ -87,7 +87,7 @@ const UNDISCOVERED = undefined
 const PILED = null
 class Bot {
   static levelToDifficulty(level) {
-    return [4, 16, 32, 52, 76][level] || 100
+    return [5, 18, 35, 56, 79][level] || 100
   }
   constructor(level, id, game) {
     this.level = level
@@ -131,7 +131,7 @@ class Bot {
       this.willPlay = null
       if (this.iPlay) {
         const delay = (this.moves % 4 === 2)
-          ? 500 + 2500/level // after second card (750-3000)
+          ? 500 + 2000/level // after second card (900-2500)
           : 200 + 500/level // between cards (300 - 700)
         this.willPlay = setTimeout(() => {
           this.play()

@@ -1,16 +1,17 @@
 class Card {
-  constructor(board, x, y) {
-    this.board = board
+  constructor(deck, x, y) {
+    this.deck = deck
     this.x = x
     this.y = y
     const el = this.el = document.createElement('div')
     el.setAttribute('class', 'card')
 
-    board.el.appendChild(el)
-    this.move(...board.toPos(x, y))
+    deck.el.appendChild(el)
+    this.move(...deck.toPos(x, y), 0, true)
     this.rotated = false
   }
-  async flip(image) {
+  async flip(image, force) {
+    if (!force && this.deck.packed) return
     this.el.style.setProperty('--elevation', 15)
     // await wait(150)
     if (image === undefined) {
@@ -21,19 +22,22 @@ class Card {
       this.el.style.setProperty('--image', image)
     }
     await wait(150)
+    if (this.deck.packed) return
     this.el.style.removeProperty('--elevation')
   }
 
-  fold() {
-    this.flip()
+  fold(force) {
+    this.flip(undefined, force)
   }
 
   // move in the grid
-  async move (x, y, elevation = 0) {
+  async move (x, y, elevation = 0, instant) {
     this.el.style.setProperty('--elevation', elevation + 34)
     this.el.style.setProperty('--x', x)
     this.el.style.setProperty('--y', y)
-    await wait(350)
+
+    instant ||  await wait(350)
+    // await wait(1)
     if (!elevation) {
       this.el.style.removeProperty('--elevation')
     } else {
@@ -44,63 +48,76 @@ class Card {
 
   // move to one of the 4 piles
   async toPile (pileIndex) {
-    const { players, toCorner } = this.board
-    pileIndex %= players.length
-    if (board.isPiled(this)) { // card already in pile
+    if (this.deck.packed) return
+    const { piles } = this.deck
+    if (this.deck.isPiled(this)) { // card already in pile
       return
     }
 
-    const { pile, name } = players[pileIndex]
-    if (!name) { // pile without player
+    const pile = piles[pileIndex]
+    if (!pile.getName()) { // pile without player
       return
     }
 
-    const [ver, hor] = toCorner(pileIndex)
+    const [ver, hor] = indexToCorner(pileIndex)
 
-    const x = ver * 5.35 + (0.005 * pile.length)
-    const y = hor * 2.9 + (0.01 * pile.length)
+    const x = ver * 5.31 + (0.005 * pile.size())
+    const y = hor * 2.84 + (0.01 * pile.size())
     
-    pile.push(this)
+    pile.add(this)
     
     // resize card to unified diemnsions
     this.el.style.setProperty('--card-width', '84px')
     this.el.style.setProperty('--card-height', '84px')
     this.el.style.setProperty('--elevation', 34)
     await wait(100)
+    if (this.deck.packed) return
     this.el.style.setProperty('--x', x)
     this.el.style.setProperty('--y', y)
     await wait(400)
-    this.el.style.setProperty('--elevation', pile.length)
+    if (this.deck.packed) return
+    this.el.style.setProperty('--elevation', pile.size())
     // this.el.style.removeProperty('--elevation')
-
   }
 }
 
-class Board {
-  constructor(app, w=6, h=6, players, onClick) {
+class Deck {
+  constructor(
+    app, // parent element
+    w=6, h=6, // dimension of grid
+    x=0, y=-1.5, // position of packed deck
+    piles,
+    onPackClick, // action on click at packed deck
+  ) {
+    this.packed = false
     this.w = w
     this.h = h
-    this.players = players.map((name) => ({
-      name,
-      pile: [],
-    }))
+    this.x = x // deck position
+    this.y = y 
+
     this.cards = new Set() // all cards
     this.grid = [] // cards in grid
 
+    this.piles = piles
+
     // create board element (zero size, in the center of the app, only for opsitioning elements inside)
     const el = this.el = document.createElement('div')
-    el.setAttribute('class', 'board')
+    el.setAttribute('class', 'deck')
     app.appendChild(el)
 
-    let edge = 80 - (Math.max(w,h) - 8) * 10
+    el.style.setProperty('--card-width', `84px`)
+    el.style.setProperty('--card-height', `84px`)
 
-    el.style.setProperty('--card-width', `${edge}px`)
-    el.style.setProperty('--card-height', `${edge}px`)
+    el.style.setProperty('--deck-name', `'${w}×${h}'`)
 
     el.addEventListener('click', e => {
       const card = this.cardOf(e.target)
       if (e.target.classList.contains('card')) {
-        onClick(card)
+        if (this.packed) {
+          onPackClick(this)
+        } else {
+          this.onCardClick && this.onCardClick(card)
+        }
       }
     })
 
@@ -114,64 +131,8 @@ class Board {
       }
     }
 
-    // create piles
-    this.players.forEach(({pile, name}, i) => {
-      if (!name) {
-        return
-      }
-
-      const [ver, hor] = this.toCorner(i)
-      {
-        const [x , y] = [
-          ver * 5.35,
-          hor * 2.9,
-        ]
-  
-        const pileBox = document.createElement('div')
-        pileBox.classList.add('pile-frame')
-        pileBox.style.setProperty('--x', x)
-        pileBox.style.setProperty('--y', y)
-        this.el.appendChild(pileBox)
-      }
-      // create user names
-      { 
-        const [x, y] = [
-          ver * 5.35,
-          hor * 1.9,
-        ]
-        const nameEl = document.createElement('div')
-        nameEl.classList.add('user-name')
-        nameEl.innerText = name
-
-        nameEl.style.setProperty('--x', x)
-        nameEl.style.setProperty('--y', y)
-        this.el.appendChild(nameEl)
-
-        this.players[i].nameEl = nameEl
-      }
-    })
-  }
-
-  toCorner(i) {
-    i+=2
-    i%=4
-    return [
-      (i % 2 ? -1 : +1) * (i >= 2 ? -1 : +1),
-      (i >= 2 ? -1 : +1),
-    ] 
-  }
-
-  highlightUser(index) {
-    this.players.forEach(({ nameEl }, i) => {
-      if (!nameEl) {
-        return
-      }
-      if (index === i) {
-        nameEl.classList.add('highlighted')
-      } else {
-        nameEl.classList.remove('highlighted')
-      }
-    })
+    // pack the deck
+    this.pack(true)
   }
 
   toPos(x,y){
@@ -182,13 +143,16 @@ class Board {
     ]
   }
 
-  destroy() {
-    this.grid.forEach(row => {
-      row.forEach(card => {
-        card.el.remove()
-      })
-    })
-    this.el.remove()
+  hide () {
+    // this.el.setAttribute('hidden', true)
+    this.el.style.setProperty('opacity', 0)
+    this.el.style.setProperty('pointer-events', 'none')
+  }
+
+  show () {
+    // this.el.removeAttribute('hidden')
+    this.el.style.setProperty('opacity', 1)
+    this.el.style.removeProperty('pointer-events')
   }
 
   swap (x1, y1, x2, y2) {
@@ -201,7 +165,7 @@ class Board {
 
   
   isPiled(card) {
-    return this.players.some(({pile})=> pile.includes(card))
+    return this.piles.some(({stack})=> stack.includes(card))
   }
 
   cardOf (el) {
@@ -213,40 +177,52 @@ class Board {
   }
 
   async pack (instant = true) {
+    this.packed = true
     const {w, h} = this
     let size = 0
     const moves = []
-    for (let i = 0; i<h; i++) {
-      for (let j = 0; j<w; j++) {
-        const x = 0 + (0.005 * size)
-        const y = -1.5 + (0.01 * size)
+    for (let i = h-1; i >=0; i--) {
+      for (let j = w-1; j >=0; j--) {
+        const x = this.x + (0.005 * size)/2
+        const y = this.y + (0.01 * size)/1.2
         size++
         const card = this.cardAt(j, i)
         card.el.style.removeProperty('--card-width')
         card.el.style.removeProperty('--card-height')
-        moves.push(card.move(x, y, size))
-        if (!instant) await wait(15)
+        card.fold(true)
+        moves.push(card.move(x, y, size, instant))
+        if (!instant) await wait(10)
       }
     }
+    this.piles.forEach(pile => { // remove cards from piles
+      pile.empty()
+    })
     await Promise.all([
-      wait(600),
+      instant || wait(600),
       ...moves,
     ])
+    // instant || (await wait(200))
+    this.el.classList.add('packed')
   }
 
   async unpack () {
+    this.el.classList.remove('packed')
     const {w, h} = this
     const moves = []
-    for (let i = h-1; i>=0; i--) {
-      for (let j = w-1; j>=0; j--) {
+    let edge = 80 - (Math.max(w,h) - 8) * 10
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
         const card = this.cardAt(j, i)
-        moves.push(card.move(...this.toPos(j, i)))
+        card.el.style.setProperty('--card-width', `${edge}px`)
+        card.el.style.setProperty('--card-height', `${edge}px`)
+        moves.push(card.move(...this.toPos(j, i), 0, false))
         await wait(15)
       }
     }
     await Promise.all([
       ...moves,
     ])
+    this.packed = false
   }
 
 
@@ -333,3 +309,59 @@ class Board {
   }
 }
 
+class Pile {
+  constructor (i, parent, name='') {
+    this.stack = []
+
+    const [ver, hor] = indexToCorner(i)
+    const x = ver * 1
+    const y = hor * 1
+
+    const pileBox = document.createElement('div')
+    pileBox.classList.add('pile-frame')
+    pileBox.style.setProperty(x < 0 ? 'left': 'right', Math.abs(x))
+    pileBox.style.setProperty(y < 0 ? 'top': 'bottom', Math.abs(y))
+    parent.appendChild(pileBox)
+    this.pileBox = pileBox
+
+    // create user name el
+    const nameEl = document.createElement('div')
+    nameEl.classList.add('user-name')
+    nameEl.classList.add(y > 0 ? 'above' : 'below')
+    nameEl.classList.add(x < 0 ? 'left' : 'right')
+    pileBox.appendChild(nameEl)
+
+    this.nameEl = nameEl
+    this.rename(name)
+  }
+
+  empty () {
+    this.stack = []
+  }
+
+  add (card) {
+    this.stack.push(card)
+  }
+
+  size () {
+    return this.stack.length
+  }
+
+  rename (name) {
+    this.nameEl.innerText = name
+    this.name = name
+    this.pileBox.hidden = !name
+  }
+
+  getName () {
+    return this.name
+  }
+
+  highlight() {
+    this.nameEl.classList.add('highlighted')
+  }
+  
+  lowlight() {
+    this.nameEl.classList.remove('highlighted')
+  }
+}

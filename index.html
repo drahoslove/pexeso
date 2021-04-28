@@ -51,7 +51,7 @@ html, body {
 
 /* menu */
 
-.menu, .board {
+.menu, .deck {
   transition: 0.25s ease;
 }
 *[hidden=true] {
@@ -68,7 +68,7 @@ html, body {
   margin: 0;
   display: grid;
   flex: 1;
-  grid-template-columns: 30px 180px auto 250px 250px auto 180px 30px;
+  grid-template-columns: 30px 180px auto 230px 230px auto 180px 30px;
   grid-template-rows: 30px  auto 150px 150px 50px 50px auto 30px;
   width: 100%;
 }
@@ -146,6 +146,7 @@ select, button {
 }
 select {
   border-right: 10px #fff solid;
+  background: #fff;
 }
 .mid button {
   font-weight: bold;
@@ -162,9 +163,9 @@ button:disabled {
 }
 
 
-/* board */
+/* deck */
 
-.board {
+.deck {
   opacity: 1;
   --card-height: 90px;
   --card-width: 90px;
@@ -182,43 +183,60 @@ button:disabled {
   transition: opacity 1s ease;
 }
 
-.pile-frame, .user-name {
-  position: absolute;
-
-  width: calc(var(--size) + var(--p));
-  height: calc(var(--size) + var(--p));
-  margin: calc((var(--size) + var(--p)) / -2 ) calc((var(--size) + var(--p)) / -2 );
-
-  top: calc(var(--y) * var(--size));
-  left: calc(var(--x) * var(--size));
-}
-
 .pile-frame {
+  position: absolute;
+  --size: 119px;
+  width: var(--size);
+  height: var(--size);
+  margin: 65px;
   border-radius: 0.8em;
   box-shadow: 0 0 0 6px #fffb;
 }
 
 .user-name {
+  position: absolute;
+  display: block;
+  height: 50px;
+  line-height: 50px;
+  width: 100%;
   text-align: center;
-  line-height: calc(var(--size) * 1.2);
   /* overflow: hidden; */
   text-overflow: ellipsis;
+}
+.user-name.above {
+  bottom: 140px;
+}
+.user-name.below {
+  top: 145px;
 }
 
 .user-name::after, .user-name::before {
   position: absolute;
-  width: 151px;
-  height: 60px;
+  width: 150px;
+  height: 50px;
   font-size: 3rem;
   color: #fffb;
+  top: -3px;
 }
-.user-name.highlighted::after {
+.user-name.highlighted.left::after {
   content: '◄';
   left: 78px;
 }
-.user-name.highlighted::before {
+.user-name.highlighted.right::before {
   content: '►';
   right: 78px;;
+}
+
+.deck.packed .card::after {
+  background-image: none;
+  content: var(--deck-name);
+  color: #0e5273;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2em;
 }
 
 .card {
@@ -252,7 +270,7 @@ button:disabled {
   background-color: white;
   border: 0.5px #888 solid;
   border-radius: 5pt;
-  box-shadow: calc(0px + 1px * var(--elevation)) calc(4px/4* var(--elevation)) calc(6px/8 * var(--elevation)) 0px rgba(32, 32, 32, calc( 0.7 - var(--elevation)/40));
+  box-shadow: calc(4px/4 * var(--elevation)) calc(3px/4* var(--elevation)) calc(5px/10 * var(--elevation)) 0px rgba(52, 62, 52, calc(0.7 - var(--elevation)/50));
   transition: box-shadow 0.1s ease;
   content: '';
   position: absolute;
@@ -333,20 +351,6 @@ button:disabled {
         </select>
       </div>
     </div>
-    <div class="right">
-      <label for="grid-size">Karty</label>
-      <select name="grid-size" id="grid-size">
-        <option value="4×2">4 × 2</option>
-        <option value="4×4">4 × 4</option>
-        <option value="6×4">6 × 4</option>
-        <option value="6×6" selected>6 × 6</option>
-        <option value="8×6">8 × 6</option>
-        <option value="8×8">8 × 8</option>
-      </select>
-    </div>
-    <div class="mid">
-      <button id="play-button" type="button">Hrát!</button>
-    </div>
   </form>
   <form class="menu" hidden='true'>
     <div class="left-buttons">
@@ -366,60 +370,94 @@ button:disabled {
 
 const pexeso = new Pexeso()
 
-let board
-let game
+// create piles
+const piles = [0,1,2,3].map(i => new Pile(i, $('#app')))
+
+const decks = [
+  [8, 8],
+  [8, 6],
+  [6, 6],
+  [6, 4],
+  [4, 4], 
+  [4, 2],
+].map(([w, h], i) => {
+  return new Deck(
+    $('#app'),
+    w, h,
+    1.9 - (i%3)*1.95, i < 3 ? 2.5 : 1,
+    piles,
+    play,
+  )
+})
 
 let isFirst = true
 
 const menus = $$('.menu')
 
-$('#shuffle-button').onclick = async(e) => {
-  e.preventDefault()
-  e.target.disabled = true
-  $('#reset-button').disabled = true
+async function play (deck) {
+  // rederegister button events
+  $('#shuffle-button').onclick = async(e) => {
+    e.preventDefault()
+    e.target.disabled = true
+    $('#reset-button').disabled = true
 
-  await board.shuffle(false)
-  e.target.disabled = false
-  $('#reset-button').disabled = false
-}
-
-$('#reset-button').onclick = async (e) => {
-  e.target.disabled = true
-  $('#shuffle-button').disabled = true
-
-  if (isFirst) {
-    game.givup()
-    await wait(1200) // wait for reveal
-    isFirst = false
+    await deck.shuffle(false)
+    e.target.disabled = false
+    $('#reset-button').disabled = false
   }
-  await board.pack(false)
-  board.el.style.setProperty('opacity', 0)
-  await wait(250)
-  menus[0].setAttribute('hidden', false)
-  menus[1].setAttribute('hidden', true)
-  await wait(500)
-  game.end()
-  board.destroy()
-}
 
-$('#play-button').onclick = async (e) => {
-  e.preventDefault()
+  $('#reset-button').onclick = async (e) => {
+    e.target.disabled = true
+    $('#shuffle-button').disabled = true
+
+    if (isFirst) {
+      game.givup()
+      await wait(1200) // wait for reveal
+      isFirst = false
+    }
+    await deck.pack(false)
+    await wait(250)
+    // show decks
+    decks.forEach(deck => {
+      deck.show()
+    })
+    // reset piles
+    piles.forEach(pile => {
+      pile.lowlight()
+      pile.rename('')
+    })
+    menus[0].setAttribute('hidden', false)
+    menus[1].setAttribute('hidden', true)
+    await wait(500)
+    game.end()
+  }
+
+  // inits:
+
+
+  const {w, h} = deck
   // init game logic
-  const [w, h] = $('#grid-size').value.split('×').map(Number)
   const players = [1,2,3,4].map(n => $(`#player${n}`).value)
 
+  // function handling incoming game events
   const onUpdate = (data) => {
     const {x, y, image, fold, pile, user, images } = data
     if (images) {
-      board.reveal(images)
+      deck.reveal(images)
       return
     }
     if (user !== undefined) {
-      board.highlightUser(user)
+      piles.forEach((pile, i) => {
+        if (i === user) {
+          pile.highlight()
+        } else {
+          pile.lowlight()
+        }
+      })
       return
     }
     if (x !== undefined && y !== undefined) {
-      const card = board.cardAt(x, y)
+      const card = deck.cardAt(x, y)
       if  (image !== undefined) {
         card.flip(image)
       }
@@ -432,35 +470,43 @@ $('#play-button').onclick = async (e) => {
     }
   }
 
-  game = await pexeso.newGame(w, h, players, onUpdate)
+  const game = await pexeso.newGame(w, h, players, onUpdate)
 
-  // init board ui
+  // init selected decks d piles
   const humans = players.filter(p => p === 'user').length
   let conter = 0
-  const playerNames = players
+  players
     .map((p, i) => {
       if (p === 'none') return ''
       if (p === 'user') return humans === 1 ? 'Ty' : `Hráč ${++conter}`
       return  p.replace('bot', 'Robot ') 
     })
-  const onClick = (card) => {
+    .forEach((name, i) => {
+      piles[i].rename(name)
+    })
+
+  deck.onCardClick = (card) => {
     const {x, y} = card
     game.tryCard(x, y)
   }
 
-  board = new Board($('#app'), w, h, playerNames, onClick)
-
   menus[0].setAttribute('hidden', true)
   menus[1].setAttribute('hidden', false)
 
-  // await board.wave(false)
-  await board.pack(true)
-  await board.unpack()
+
+  decks.forEach(d => { // hide other decks
+    if (deck !== d) {
+      d.hide()
+    }
+  })
+
+  // await deck.wave(false)
+  await deck.unpack()
   if (isFirst) {
-    board.reveal()
+    deck.reveal()
     await wait(500)
-    await board.reveal(null, true)
-    await board.shuffle()
+    await deck.reveal(null, true)
+    await deck.shuffle()
   }
   $('#reset-button').disabled = false
   $('#shuffle-button').disabled = false

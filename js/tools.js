@@ -1,6 +1,18 @@
 
 const rand = (n) => Math.floor(Math.random()*n)
 
+
+// returns pair of +- ones to indicate corner
+// indexed from top left goin clockwise
+const indexToCorner = (i) => {
+  i+=2
+  i%=4
+  return [
+    (i % 2 ? -1 : +1) * (i >= 2 ? -1 : +1),
+    (i >= 2 ? -1 : +1),
+  ] 
+}
+
 // use as filter to randomize array
 const randomize = () => rand(2) - 0.5
 
