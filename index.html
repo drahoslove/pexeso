@@ -1,7 +1,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=0.50">
 <title>Pexeso</title>
 <style>
 html, body {
@@ -28,6 +28,7 @@ html, body {
   font-family: monospace;
   color: #fff;
   overflow: hidden;
+  --scale: 1;
 }
 
 .table::before, .table::after {
@@ -134,7 +135,7 @@ label {
 }
 
 .form-group>* {
-  flex: 1 0 200px;
+  flex: 1 0 190px;
 }
 
 select, button {
@@ -250,16 +251,26 @@ button:disabled {
   position: absolute;
   z-index: var(--elevation);
 
-  margin: calc(var(--card-width) / -2) calc(var(--card-width) / -2);
-  width: var(--card-width);
-  height: var(--card-height);
-  top: calc(var(--y) * (var(--card-height) + var(--p)) - 0.5px * var(--elevation));
-  left: calc(var(--x) * (var(--card-width) + var(--p)));
+  margin: calc(var(--card-width) / -2 * var(--scale)) calc(var(--card-width) / -2 * var(--scale));
+  width: calc(var(--card-width) * var(--scale));
+  height: calc(var(--card-height) * var(--scale));
+  top: calc((var(--y) * (var(--card-height) + var(--p)) - 0.5px * var(--elevation)) * var(--scale));
+  left: calc((var(--x) * (var(--card-width) + var(--p))) * var(--scale));
 
   transform-style: preserve-3d;
   transition: transform 0.3s ease
+    , width 0.15s ease
+    , height 0.15s ease
     , left calc(var(--elevation) * 0.01s + 0.1s) ease
     , top calc(var(--elevation) * 0.01s + 0.1s) ease;
+}
+
+.card.piled {
+  --card-width: 84px;
+  --card-height: 84px;
+  width: 90px;
+  height: 90px;
+  margin: calc(90px / -2) calc(90px / -2);
 }
 
 .card.rotated {
@@ -292,10 +303,33 @@ button:disabled {
   transform: rotateY(180deg);
 }
 
-
 .card:hover {
   --elevation: 5;
   cursor: pointer;
+}
+
+@media only screen and (max-width: 1250px), (max-height: 770px) {
+  body {
+    background-color: #56776a;
+    background-image: url('img/pool-table.png');
+    box-shadow: inset 3px 3px 15px 0px rgba(32, 42, 32, 0.8);
+  }
+  .table {
+    width: 1000px;
+    height: 624;
+    background: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    --scale: 0.82
+  }
+  .pile-frame {
+    margin: 30px;
+  }
+  .menu {
+    grid-template-columns: 20px 150px auto 200px 200px auto 150px 20px;
+    grid-template-rows: 20px  auto 150px 150px 50px 50px auto 20px;
+  }
 }
 </style>
 <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->

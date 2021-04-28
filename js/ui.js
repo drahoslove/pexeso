@@ -67,8 +67,9 @@ class Card {
     pile.add(this)
     
     // resize card to unified diemnsions
-    this.el.style.setProperty('--card-width', '84px')
-    this.el.style.setProperty('--card-height', '84px')
+    this.el.classList.add('piled')
+    this.el.style.removeProperty('--card-width')
+    this.el.style.removeProperty('--card-height')
     this.el.style.setProperty('--elevation', 34)
     await wait(100)
     if (this.deck.packed) return
@@ -105,8 +106,8 @@ class Deck {
     el.setAttribute('class', 'deck')
     app.appendChild(el)
 
-    el.style.setProperty('--card-width', `84px`)
-    el.style.setProperty('--card-height', `84px`)
+    // el.style.setProperty('--card-width', `84px`)
+    // el.style.setProperty('--card-height', `84px`)
 
     el.style.setProperty('--deck-name', `'${w}×${h}'`)
 
@@ -187,6 +188,7 @@ class Deck {
         const y = this.y + (0.01 * size)/1.2
         size++
         const card = this.cardAt(j, i)
+        card.el.classList.remove('piled')
         card.el.style.removeProperty('--card-width')
         card.el.style.removeProperty('--card-height')
         card.fold(true)
@@ -213,6 +215,7 @@ class Deck {
     for (let i = 0; i < h; i++) {
       for (let j = 0; j < w; j++) {
         const card = this.cardAt(j, i)
+        card.el.classList.remove('piled')
         card.el.style.setProperty('--card-width', `${edge}px`)
         card.el.style.setProperty('--card-height', `${edge}px`)
         moves.push(card.move(...this.toPos(j, i), 0, false))
