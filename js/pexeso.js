@@ -55,7 +55,7 @@ class Pexeso {
       },
       start: game.start.bind(game),
       end: game.end.bind(game),
-      givup: game.givup.bind(game), // TODO merge with end?
+      giveup: game.giveup.bind(game), // TODO merge with end?
     }
   }
 }
@@ -116,14 +116,8 @@ class Bot {
         }
         if (pile !== undefined) {
           this.mem[card] = PILED
-          if (this.currentCard === card) {
-            this.currentCard = undefined
-          }
         }
         if (fold === true) {
-          if (this.currentCard === card) {
-            this.currentCard = undefined
-          }
         }
       }
 
@@ -143,6 +137,7 @@ class Bot {
   play() {
     if (this.moves % 4 === 2) {
       this.game.checkPair()
+      this.currentCard = undefined
       return
     }
 
@@ -277,7 +272,7 @@ class Game { // TODO move this to the server
     })
   }
 
-  givup() {
+  giveup() {
     this.emit({
       images: [...this.cardImages],
     })
@@ -319,6 +314,12 @@ class Game { // TODO move this to the server
       .filter((i) => this.hasState(i, VISIBLE) && !this.hasState(i, REMOVED))
   }
 
+  getRemaining() {
+    return this.cardImages
+      .map((_, i) => i)
+      .filter((i) => !this.hasState(i, REMOVED))
+  }
+
   checkPair () {
     const visibleCards = this.getVisible()
     if (visibleCards.length !== 2) {
@@ -340,7 +341,11 @@ class Game { // TODO move this to the server
         })
       }
     })
-    if (!isMatch) {
+    const isEnd = this.getRemaining().length === 0
+    if (isEnd) {
+      this.end()
+    }
+    if (!isMatch && !isEnd) {
       this.nextPlayer()
     }
     this.two = false

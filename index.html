@@ -445,7 +445,7 @@ async function play (deck) {
     $('#shuffle-button').disabled = true
 
     if (isFirst) {
-      game.givup()
+      game.giveup()
       await wait(1200) // wait for reveal
       isFirst = false
     }
