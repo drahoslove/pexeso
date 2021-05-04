@@ -148,18 +148,19 @@ html, body {
 .results[hidden=true] {
   opacity: 0;
   pointer-events: none;
+  transition-delay: 0.5s;
 }
 
 .bar {
   --points: 0;
-  --name: 'Robot 5';
+  --name: '';
   color: var(--chalk);
   position: relative;
   border-radius: 0.25em;
   box-shadow: inset 0 0 0 4px var(--chalk);
   width: 80px;
-  height: calc(var(--points) * 8px);
-  transition: height 1s ease;
+  height: calc(var(--points) * 12px);
+  transition: height 0.25s ease;
 }
 
 .bar::before {
@@ -206,7 +207,7 @@ label {
 }
 
 .form-group>* {
-  flex: 1 0 190px;
+  flex: 1 0 180px;
 }
 
 select, button {
@@ -540,6 +541,8 @@ let isFirst = true
 
 const menus = $$('.menu')
 
+const endScreen = new EndScreen($('#results'), piles)
+
 async function play (deck) {
   // rederegister button events
   $('#shuffle-button').onclick = async(e) => {
@@ -553,6 +556,7 @@ async function play (deck) {
   }
 
   $('#reset-button').onclick = async (e) => {
+    endScreen.hide()
     e.target.disabled = true
     $('#shuffle-button').disabled = true
 
@@ -573,12 +577,12 @@ async function play (deck) {
       pile.setName('')
     })
     game.end()
+    endScreen.hide()
     menus[0].setAttribute('hidden', false)
     menus[1].setAttribute('hidden', true)
-    $('#results').setAttribute('hidden', true)
     await wait(500)
   }
-  $('#results').setAttribute('hidden', true)
+  endScreen.hide()
 
   // inits:
 
@@ -605,7 +609,7 @@ async function play (deck) {
       return
     }
     if (end) {
-      showEndScreen($('#results'), piles)
+      endScreen.show()
       return
     }
     if (x !== undefined && y !== undefined) {

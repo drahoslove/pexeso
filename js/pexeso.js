@@ -270,6 +270,7 @@ class Game { // TODO move this to the server
     this.emit({
       end: true,
     })
+    this.onUpdates = []
   }
 
   giveup() {
@@ -341,7 +342,6 @@ class Game { // TODO move this to the server
         })
       }
     })
-    console.log('remainingcar', this.getRemaining())
     const isEnd = this.getRemaining().length === 0
     if (isEnd) {
       this.end()
