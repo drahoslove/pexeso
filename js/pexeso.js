@@ -309,13 +309,13 @@ class Game { // TODO move this to the server
   }
 
   getVisible() {
-    return this.cardImages
-      .map((_, i) => i)
-      .filter((i) => this.hasState(i, VISIBLE) && !this.hasState(i, REMOVED))
+    return this.cardStates
+    .map((_, i) => i)
+    .filter((i) => this.hasState(i, VISIBLE) && !this.hasState(i, REMOVED))
   }
 
   getRemaining() {
-    return this.cardImages
+    return this.cardStates
       .map((_, i) => i)
       .filter((i) => !this.hasState(i, REMOVED))
   }
@@ -341,6 +341,7 @@ class Game { // TODO move this to the server
         })
       }
     })
+    console.log('remainingcar', this.getRemaining())
     const isEnd = this.getRemaining().length === 0
     if (isEnd) {
       this.end()

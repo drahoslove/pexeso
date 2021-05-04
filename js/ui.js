@@ -335,7 +335,7 @@ class Pile {
     pileBox.appendChild(nameEl)
 
     this.nameEl = nameEl
-    this.rename(name)
+    this.setName(name)
   }
 
   empty () {
@@ -350,7 +350,7 @@ class Pile {
     return this.stack.length
   }
 
-  rename (name) {
+  setName (name) {
     this.nameEl.innerText = name
     this.name = name
     this.pileBox.hidden = !name
@@ -367,4 +367,21 @@ class Pile {
   lowlight() {
     this.nameEl.classList.remove('highlighted')
   }
+}
+
+
+function showEndScreen(el, piles) {
+  [...el.children].forEach((bar, i) => {
+    const name = piles[i].getName()
+    const size = piles[i].size()
+    console.log(name, size)
+    bar.style.setProperty('--name', `'${name}'`)
+    bar.style.setProperty('--points', size)
+    if (name) {
+      bar.removeAttribute('hidden')
+    } else {
+      bar.setAttribute('hidden', true)
+    }
+  })
+  el.removeAttribute('hidden')
 }

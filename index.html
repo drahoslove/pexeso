@@ -4,6 +4,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=0.50">
 <title>Pexeso</title>
 <style>
+:root {
+  --chalk: #fffb;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -37,7 +41,7 @@ html, body {
   position: absolute;
   top: 25px;
   bottom: 25px;
-  border-color: #fffb;
+  border-color: var(--chalk);
   border-width: 6px;
 }
 
@@ -70,7 +74,7 @@ html, body {
   display: grid;
   flex: 1;
   grid-template-columns: 30px 180px auto 230px 230px auto 180px 30px;
-  grid-template-rows: 30px  auto 150px 150px 50px 50px auto 30px;
+  grid-template-rows: 30px  auto 250px 150px 50px 50px auto 30px;
   width: 100%;
 }
 
@@ -103,7 +107,7 @@ html, body {
   justify-content: center;
 }
 
-.left-buttons, .right-buttons {
+.left-buttons, .right-buttons, .middle {
   display: flex;
   grid-row: 3 / span 4;
   flex-direction: column;
@@ -114,6 +118,73 @@ html, body {
 }
 .right-buttons {
   grid-column: 7;
+}
+.middle {
+  grid-column: 3 / span 4;
+  grid-row: 3 / span 2;
+}
+
+.results {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  justify-content: space-evenly;
+  align-items: flex-end;
+  margin: 1em 3em;
+  padding: 1em 0;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+.results::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  height: 0;
+  width: 100%;
+  border-radius: 3px;
+  border: 3px solid var(--chalk);
+}
+.results[hidden=true] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bar {
+  --points: 0;
+  --name: 'Robot 5';
+  color: var(--chalk);
+  position: relative;
+  border-radius: 0.25em;
+  box-shadow: inset 0 0 0 4px var(--chalk);
+  width: 80px;
+  height: calc(var(--points) * 8px);
+  transition: height 1s ease;
+}
+
+.bar::before {
+  color: var(--chalk);
+  content: var(--name);
+  position: relative;
+  bottom: 1.75em;
+  display: flex;
+  width: 100%;
+  white-space: nowrap;
+  justify-content: center;
+}
+.bar::after {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: absolute;
+  counter-reset: points var(--points);
+  content: counter(points);
+  text-align: center;
+  left: 0;
+  bottom: -2.5em;
+  right: 0;
+  top: 0.5em;
+  overflow: hidden;
 }
 
 h2 {
@@ -143,11 +214,13 @@ select, button {
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  color: #56776a;
+  color: #0e5273;
 }
 select {
-  border-right: 10px #fff solid;
-  background: #fff;
+  /* border-right: 10px #fff solid; */
+  background: transparent;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-size: 14pt;
 }
 .mid button {
   font-weight: bold;
@@ -163,6 +236,35 @@ button:disabled {
   opacity: 0.6;
 }
 
+.menu {
+  z-index: 0;
+}
+
+.paper {
+  position: relative;
+  background-color: #eeeeed;
+  box-shadow: 1px 1px 2px rgba(32, 42, 32, 0.8);
+  padding: 0.5em;
+  border-radius: 2px;
+}
+
+.paper::before, .paper::after{
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  width: 40%;
+  height: 10px;
+  box-shadow: 0 5px 14px rgba(0,0,0,.7);
+  z-index: -1;
+}
+.paper::before {
+  left: 12px;
+  transform: skew(-2deg) rotate(-2deg);
+}
+.paper::after {
+  right: 12px;
+  transform: skew(2deg) rotate(2deg);
+}
 
 /* deck */
 
@@ -191,7 +293,7 @@ button:disabled {
   height: var(--size);
   margin: 65px;
   border-radius: 0.8em;
-  box-shadow: 0 0 0 6px #fffb;
+  box-shadow: 0 0 0 6px var(--chalk);
 }
 
 .user-name {
@@ -216,7 +318,7 @@ button:disabled {
   width: 150px;
   height: 50px;
   font-size: 3rem;
-  color: #fffb;
+  color: var(--chalk);
   top: -3px;
 }
 .user-name.highlighted.left::after {
@@ -345,44 +447,46 @@ button:disabled {
       <h1>Pexeso</h1>
     </div>
     <div class="left">
-      <label>Hráči</label>
-      <div class="form-group">
-        <select name="player1" id="player1">
-          <option value="user" selected>👤 Ty</option>
-          <option value="bot1">🤖 Robot ¹</option>
-          <option value="bot2">🤖 Robot ²</option>
-          <option value="bot3">🤖 Robot ³</option>
-          <option value="bot4">🤖 Robot ⁴</option>
-          <option value="bot5">🤖 Robot ⁵</option>
-          <option value="none">⛔ Nikdo</option>
-        </select>
-        <select name="player2" id="player2">
-          <option value="user">👤 Ty</option>
-          <option value="bot1">🤖 Robot ¹</option>
-          <option value="bot2">🤖 Robot ²</option>
-          <option value="bot3" selected>🤖 Robot ³</option>
-          <option value="bot4">🤖 Robot ⁴</option>
-          <option value="bot5">🤖 Robot ⁵</option>
-          <option value="none">⛔ Nikdo</option>
-        </select>
-        <select name="player3" id="player4">
-          <option value="user">👤 Ty</option>
-          <option value="bot1">🤖 Robot ¹</option>
-          <option value="bot2">🤖 Robot ²</option>
-          <option value="bot3">🤖 Robot ³</option>
-          <option value="bot4">🤖 Robot ⁴</option>
-          <option value="bot5">🤖 Robot ⁵</option>
-          <option value="none" selected>⛔ Nikdo</option>
-        </select>
-        <select name="player4" id="player3">
-          <option value="user">👤 Ty</option>
-          <option value="bot1">🤖 Robot ¹</option>
-          <option value="bot2">🤖 Robot ²</option>
-          <option value="bot3">🤖 Robot ³</option>
-          <option value="bot4">🤖 Robot ⁴</option>
-          <option value="bot5">🤖 Robot ⁵</option>
-          <option value="none" selected>⛔ Nikdo</option>
-        </select>
+      <!-- <label>Hráči</label> -->
+      <div class="paper">
+        <div class="form-group">
+          <select name="player1" id="player1">
+            <option value="user" selected>👤 Ty</option>
+            <option value="bot1">🤖 Robot ¹</option>
+            <option value="bot2">🤖 Robot ²</option>
+            <option value="bot3">🤖 Robot ³</option>
+            <option value="bot4">🤖 Robot ⁴</option>
+            <option value="bot5">🤖 Robot ⁵</option>
+            <option value="none">⛔ Nikdo</option>
+          </select>
+          <select name="player2" id="player2">
+            <option value="user">👤 Ty</option>
+            <option value="bot1">🤖 Robot ¹</option>
+            <option value="bot2">🤖 Robot ²</option>
+            <option value="bot3" selected>🤖 Robot ³</option>
+            <option value="bot4">🤖 Robot ⁴</option>
+            <option value="bot5">🤖 Robot ⁵</option>
+            <option value="none">⛔ Nikdo</option>
+          </select>
+          <select name="player3" id="player4">
+            <option value="user">👤 Ty</option>
+            <option value="bot1">🤖 Robot ¹</option>
+            <option value="bot2">🤖 Robot ²</option>
+            <option value="bot3">🤖 Robot ³</option>
+            <option value="bot4">🤖 Robot ⁴</option>
+            <option value="bot5">🤖 Robot ⁵</option>
+            <option value="none" selected>⛔ Nikdo</option>
+          </select>
+          <select name="player4" id="player3">
+            <option value="user">👤 Ty</option>
+            <option value="bot1">🤖 Robot ¹</option>
+            <option value="bot2">🤖 Robot ²</option>
+            <option value="bot3">🤖 Robot ³</option>
+            <option value="bot4">🤖 Robot ⁴</option>
+            <option value="bot5">🤖 Robot ⁵</option>
+            <option value="none" selected>⛔ Nikdo</option>
+          </select>
+        </div>
       </div>
     </div>
   </form>
@@ -391,6 +495,14 @@ button:disabled {
       <button id="reset-button" type="button" disabled="true">
         Zabalit
       </button>
+    </div>
+    <div class="middle">
+      <div id="results" class="results" hidden="true">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
     </div>
     <div class="right-buttons">
       <button id="shuffle-button" type="button" disabled="true">
@@ -458,13 +570,15 @@ async function play (deck) {
     // reset piles
     piles.forEach(pile => {
       pile.lowlight()
-      pile.rename('')
+      pile.setName('')
     })
+    game.end()
     menus[0].setAttribute('hidden', false)
     menus[1].setAttribute('hidden', true)
+    $('#results').setAttribute('hidden', true)
     await wait(500)
-    game.end()
   }
+  $('#results').setAttribute('hidden', true)
 
   // inits:
 
@@ -475,7 +589,7 @@ async function play (deck) {
 
   // function handling incoming game events
   const onUpdate = (data) => {
-    const {x, y, image, fold, pile, user, images } = data
+    const {x, y, image, fold, pile, user, images, end } = data
     if (images) {
       deck.reveal(images)
       return
@@ -488,6 +602,10 @@ async function play (deck) {
           pile.lowlight()
         }
       })
+      return
+    }
+    if (end) {
+      showEndScreen($('#results'), piles)
       return
     }
     if (x !== undefined && y !== undefined) {
@@ -516,7 +634,7 @@ async function play (deck) {
       return  p.replace('bot', 'Robot ') 
     })
     .forEach((name, i) => {
-      piles[i].rename(name)
+      piles[i].setName(name)
     })
 
   deck.onCardClick = (card) => {
