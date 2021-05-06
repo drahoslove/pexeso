@@ -112,6 +112,13 @@ class Deck {
     el.style.setProperty('--deck-name', `'${w}×${h}'`)
 
     el.addEventListener('click', e => {
+      if (e.target === e.currentTarget) {
+        // Firefox sometimes make this fire on the deck element instead of the card
+        if (this.packed) {
+          onPackClick(this)
+        }
+        return
+      }
       const card = this.cardOf(e.target)
       if (e.target.classList.contains('card')) {
         if (this.packed) {
