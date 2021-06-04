@@ -70,7 +70,7 @@ html, body {
   display: grid;
   flex: 1;
   grid-template-columns: 30px 180px auto 230px 230px auto 180px 30px;
-  grid-template-rows: 30px  auto 250px 150px 50px 50px auto 30px;
+  grid-template-rows: 30px  150px 210px 210px auto 30px;
   width: 100%;
 }
 
@@ -82,30 +82,9 @@ html, body {
   align-items: center;
 }
 
-.menu .left {
-  grid-column: 4 / span 2;
-  grid-row: 3;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu .right {
-  grid-column: 4 / span 2;
-  grid-row: 4;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu .mid {
-  grid-column: 4 / span 2;
-  grid-row: 5 / span 1;
-  display: flex;
-  justify-content: center;
-}
-
 .left-buttons, .right-buttons, .middle {
   display: flex;
-  grid-row: 3 / span 4;
+  grid-row: 3 / span 2;
   flex-direction: column;
   justify-content: center;
 }
@@ -117,7 +96,140 @@ html, body {
 }
 .middle {
   grid-column: 3 / span 4;
-  grid-row: 3 / span 2;
+  grid-row: 3 / span 1;
+}
+
+#user-selectors {
+  justify-content: center;
+  align-items: flex-end;
+  overflow: visible;
+  --card-width: 90px;
+  --card-height: 90px;
+  display: flex;
+  flex-direction: row;
+}
+
+.user-selector {
+  display: flex;
+  justify-self: center;
+  align-items: center;
+  /* width: 100px; */
+  /* height: 100px; */
+  position: relative;
+  margin: 20px;
+}
+
+.user-selector.none::before {
+  content: '+';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 4px  var(--chalk) solid;
+  border-radius: 9px;
+  font-size: 60px;
+  color: var(--chalk);
+  line-height: 120px;
+}
+
+#user-selectors:hover .user-selector button {
+  opacity: 0.5;
+}
+#user-selectors .user-selector:hover button {
+  opacity: 1;
+}
+.user-selector button {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  z-index: 100;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  box-sizing: unset;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.user-selector button:hover {
+  color: #b00;
+}
+.user-selector.none button {
+  display: none;
+}
+
+.user-selector.none .card {
+  opacity: 0;
+}
+
+.user-selector input {
+  display: none;
+  position: absolute;
+  bottom: -25px;
+  width: 100%;
+}
+.user-selector.bot input {
+  display: inline-block;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  background: transparent;
+  margin: 0;
+  height: 18px;
+  overflow: hidden;
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  background: white;
+  margin-top: -5px;
+  width: calc(var(--scale) *18px);
+  height: calc(var(--scale) *18px);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: white calc(var(--scale) * -18px) 0 0 0,
+    white calc(var(--scale) * -36px) 0 0 0,
+    white calc(var(--scale) * -54px) 0 0 0,
+    white calc(var(--scale) * -72px) 0 0 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: white;
+  margin-top: -6px;
+  width: calc(var(--scale) *18px);
+  height: calc(var(--scale) *18px);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  box-shadow: white calc(var(--scale) * -18px) 0 0 0,
+    white calc(var(--scale) * -36px) 0 0 0,
+    white calc(var(--scale) * -54px) 0 0 0,
+    white calc(var(--scale) * -72px) 0 0 0;
+}
+
+input[type=range]::-moz-range-track {
+  background: var(--chalk);
+  height: 6px;
+  border-radius: 5px;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: var(--chalk);
+  height: 6px;
+  border-radius: 5px;
+}
+input[type=range]::-webkit-progress-value {
+  background: red;
+}
+input[type=range]::-webkit-progress-value {
+  background: red;
 }
 
 .results {
@@ -340,23 +452,39 @@ button:disabled {
   font-size: 1.2em;
 }
 
+.menu .card {
+  position:initial;
+  margin: 0;
+}
+
+.menu .card::after,
+.menu .card::before {
+  background-image: none;
+  content: var(--user-name);
+  color: #0e5273;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2em;
+}
+
 .card {
   /* backend 0-31 = faces; 32 - back */
   opacity: 1;
-  --image: 32; 
+  --image: 32;
   --y: 0;
   --x: 0;
   --elevation: 1;
   --p: 10px;
   position: absolute;
   z-index: var(--elevation);
-
   margin: calc(var(--card-width) / -2 * var(--scale)) calc(var(--card-width) / -2 * var(--scale));
   width: calc(var(--card-width) * var(--scale));
   height: calc(var(--card-height) * var(--scale));
   top: calc((var(--y) * (var(--card-height) + var(--p)) - 0.5px * var(--elevation)) * var(--scale));
   left: calc((var(--x) * (var(--card-width) + var(--p))) * var(--scale));
-
   transform-style: preserve-3d;
   transition: transform 0.3s ease
     , width 0.15s ease
@@ -444,47 +572,9 @@ button:disabled {
     <div class="header">
       <h1>Pexeso</h1>
     </div>
-    <div class="left">
+    <div class="middle">
       <!-- <label>Hráči</label> -->
-      <div class="paper">
-        <div class="form-group">
-          <select name="player1" id="player1">
-            <option value="user" selected>👤 Ty</option>
-            <option value="bot1">🤖 Robot ¹</option>
-            <option value="bot2">🤖 Robot ²</option>
-            <option value="bot3">🤖 Robot ³</option>
-            <option value="bot4">🤖 Robot ⁴</option>
-            <option value="bot5">🤖 Robot ⁵</option>
-            <option value="none">⛔ Nikdo</option>
-          </select>
-          <select name="player2" id="player2">
-            <option value="user">👤 Ty</option>
-            <option value="bot1">🤖 Robot ¹</option>
-            <option value="bot2">🤖 Robot ²</option>
-            <option value="bot3" selected>🤖 Robot ³</option>
-            <option value="bot4">🤖 Robot ⁴</option>
-            <option value="bot5">🤖 Robot ⁵</option>
-            <option value="none">⛔ Nikdo</option>
-          </select>
-          <select name="player3" id="player4">
-            <option value="user">👤 Ty</option>
-            <option value="bot1">🤖 Robot ¹</option>
-            <option value="bot2">🤖 Robot ²</option>
-            <option value="bot3">🤖 Robot ³</option>
-            <option value="bot4">🤖 Robot ⁴</option>
-            <option value="bot5">🤖 Robot ⁵</option>
-            <option value="none" selected>⛔ Nikdo</option>
-          </select>
-          <select name="player4" id="player3">
-            <option value="user">👤 Ty</option>
-            <option value="bot1">🤖 Robot ¹</option>
-            <option value="bot2">🤖 Robot ²</option>
-            <option value="bot3">🤖 Robot ³</option>
-            <option value="bot4">🤖 Robot ⁴</option>
-            <option value="bot5">🤖 Robot ⁵</option>
-            <option value="none" selected>⛔ Nikdo</option>
-          </select>
-        </div>
+      <div id="user-selectors">
       </div>
     </div>
   </form>
@@ -517,6 +607,14 @@ const pexeso = new Pexeso()
 // create piles
 const piles = [0,1,2,3].map(i => new Pile(i, $('#app')))
 
+const userSelectors = [
+  'user',
+  'bot3',
+  'none',
+  'none',
+].map((defaultValue, i) => new UserSelector(i, $('#user-selectors'), defaultValue))
+
+
 const decks = [
   [8, 8],
   [8, 6],
@@ -528,11 +626,13 @@ const decks = [
   return new Deck(
     $('#app'),
     w, h,
-    1.9 - (i%3)*1.95, i < 3 ? 2.5 : 1,
+    1.9 - (i%3)*1.95,
+    i < 3 ? 2.5 : 1,
     piles,
     play,
   )
 })
+
 
 let isFirst = true
 
@@ -586,7 +686,7 @@ async function play (deck) {
 
   const {w, h} = deck
   // init game logic
-  const players = [1,2,3,4].map(n => $(`#player${n}`).value)
+  const players = userSelectors.map(s => s.value)
 
   // function handling incoming game events
   const onUpdate = (data) => {

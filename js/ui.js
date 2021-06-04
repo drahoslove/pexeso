@@ -1,5 +1,5 @@
 class Card {
-  constructor(deck, x, y) {
+  constructor(deck, x, y, twosided) {
     this.deck = deck
     this.x = x
     this.y = y
@@ -7,19 +7,30 @@ class Card {
     el.setAttribute('class', 'card')
 
     deck.el.appendChild(el)
-    this.move(...deck.toPos(x, y), 0, true)
+    const deckPos = deck.toPos ? deck.toPos(x, y) : [x, y]
+    this.move(...deckPos, 0, true)
     this.rotated = false
+    this._el = el
+    this.isTwosided = twosided
   }
   async flip(image, force) {
     if (!force && this.deck.packed) return
     this.el.style.setProperty('--elevation', 15)
     // await wait(150)
-    if (image === undefined) {
-      this.el.classList.remove('rotated')
-      this.el.style.removeProperty('--image')
+    if (this.isTwosided) {
+      if (this.el.classList.contains('rotated')) {
+        this.el.classList.remove('rotated')
+      } else {
+        this.el.classList.add('rotated')
+      }
     } else {
-      this.el.classList.add('rotated')
-      this.el.style.setProperty('--image', image)
+      if (image === undefined) {
+        this.el.classList.remove('rotated')
+        this.el.style.removeProperty('--image')
+      } else {
+        this.el.classList.add('rotated')
+        this.el.style.setProperty('--image', image)
+      }
     }
     await wait(150)
     if (this.deck.packed) return
@@ -85,7 +96,7 @@ class Card {
 class Deck {
   constructor(
     app, // parent element
-    w=6, h=6, // dimension of grid
+    w=6, h=6, // dimension of grid (number of cards)
     x=0, y=-1.5, // position of packed deck
     piles,
     onPackClick, // action on click at packed deck
@@ -373,6 +384,104 @@ class Pile {
   
   lowlight() {
     this.nameEl.classList.remove('highlighted')
+  }
+}
+
+class UserSelector {
+  constructor(i, parent, defaultVal) {
+    // const [ver, hor] = indexToCorner(i)
+    // const x = ver * 0.51
+    // const y = hor * 0.51
+
+    const selector = document.createElement('div')
+    selector.className = 'user-selector'
+    parent.appendChild(selector)
+    this._el = selector
+
+    const remover = document.createElement('button')
+    remover.type = 'button'
+    remover.innerText = '×'
+    remover.onclick = () => { this.remove() }
+    selector.appendChild(remover)
+
+    const lvler = document.createElement('input')
+    lvler.type = 'range'
+    lvler.value = 3
+    lvler.min = 1
+    lvler.max = 5
+    lvler.step = 1
+    selector.append(lvler)
+    
+    const pseudoDeck = {el: selector}
+    
+    this.card = new Card(pseudoDeck, 0, 0, true)
+    this._lvler = lvler
+
+    this._type = 'none'
+    this.value = defaultVal
+
+    this.card._el.addEventListener('click', (e) => {
+      if (this.value === 'none') {
+        this.add()
+      } else {
+        this.toggle()
+      }
+    })
+  }
+
+  get value() {
+    if (['user', 'none'].includes(this._type)) {
+      return this._type
+    }
+    if (this._type === 'bot') {
+      return this._type + this._lvler.value
+    }
+    return ''
+  }
+  set value(val) {
+    if (['user', 'none'].includes(val)) {
+      this._type = val
+    }
+    if (val.startsWith('bot')) {
+      const lvl = +val.substr(3)
+      this._type = 'bot'
+      this._lvler.value = lvl
+    }
+    this.card.flip()
+    setTimeout(() => {
+      const icon = {
+        user: '👤',
+        bot: '🤖',
+      }[this._type] || ''
+      this.card._el.style.setProperty('--user-name', `'${icon}'`)
+      if (val === 'none') {
+        this._el.classList.add('none')
+      } else {
+        this._el.classList.remove('none')
+      }
+      if (this._type === 'bot') {
+        this._el.classList.add('bot')
+      } else {
+        this._el.classList.remove('bot')
+      }
+    }, 75)
+  }
+
+  toggle() {
+    if ((this.value).includes('bot')) {
+      return this.value = 'user'
+    }
+    if (this.value === 'user') {
+      return this.value = 'bot' + (this._lvler.value)
+    }
+  }
+
+  add () {
+    this.value = 'bot' + this._lvler.value
+  }
+
+  remove () {
+    this.value = 'none'
   }
 }
 
