@@ -388,6 +388,7 @@ class Pile {
   }
 }
 
+const LVLS = '12345' || '○◔◑◕⬤' || '⋅︰⁖⁘⁙'
 class UserSelector {
   constructor(parent, defaultVal) {
     UserSelector.list = [...(UserSelector.list || []), this] 
@@ -412,6 +413,10 @@ class UserSelector {
     lvler.min = 1
     lvler.max = 5
     lvler.step = 1
+    lvler.onchange = (e) => {
+      const lvl = e.target.value
+      this._el.style.setProperty('--lvl', `'${LVLS[lvl-1]}'`)
+    }
     selector.append(lvler)
     
     const pseudoDeck = {el: selector}
@@ -450,12 +455,16 @@ class UserSelector {
       this._lvler.value = lvl
     }
     this.card.flip()
+    if (this._type !== 'bot') {
+      this._el.style.removeProperty('--lvl')
+    }
     setTimeout(() => {
       const icon = {
         user: '👤',
         bot: '🤖',
       }[this._type] || ''
       this.card._el.style.setProperty('--user-name', `'${icon}'`)
+      this._el.style.setProperty('--lvl', `'${LVLS[this._lvler.value-1]}'`)
       if (val === 'none') {
         this._el.classList.add('none')
       } else {

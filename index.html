@@ -6,6 +6,7 @@
 <style>
 :root {
   --chalk: #fffb;
+  --blue: #0e5273;
 }
 
 html, body {
@@ -189,6 +190,25 @@ html, body {
   display: inline-block;
 }
 
+.user-selector::after {
+  content: var(--lvl);
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 1em;
+  height: 1em;
+  color: var(--blue);
+  z-index: 1000;
+  visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+.user-selector.bot::after {
+  visibility: visible;
+}
+
 #user-selectors .user-selector:hover input[type=range] {
   opacity: 1;
 }
@@ -343,7 +363,7 @@ select, button {
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  color: #0e5273;
+  color: var(--blue);
 }
 select {
   /* border-right: 10px #fff solid; */
@@ -462,7 +482,7 @@ button:disabled {
 .deck.packed .card::after {
   background-image: none;
   content: var(--deck-name);
-  color: #0e5273;
+  color: var(--blue);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -480,7 +500,7 @@ button:disabled {
 .menu .card::before {
   background-image: none;
   content: var(--user-name);
-  color: #0e5273;
+  color: var(--blue);
   display: flex;
   justify-content: center;
   align-items: center;
