@@ -81,6 +81,13 @@ html, body {
   justify-content: center;
   align-items: center;
 }
+.header a {
+  text-decoration: none;
+  color: white;
+}
+.header a:hover {
+  text-decoration: underline;
+}
 
 .left-buttons, .right-buttons, .middle {
   display: flex;
@@ -570,7 +577,9 @@ button:disabled {
 <div id="app" class="table">
   <form class="menu">
     <div class="header">
-      <h1>Pexeso</h1>
+      <a href="">
+        <h1>Pexeso</h1>
+      </a>
     </div>
     <div class="middle">
       <!-- <label>Hráči</label> -->
