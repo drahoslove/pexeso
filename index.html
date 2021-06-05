@@ -616,12 +616,13 @@ const pexeso = new Pexeso()
 // create piles
 const piles = [0,1,2,3].map(i => new Pile(i, $('#app')))
 
+// create user selectors
 const userSelectors = [
   'user',
   'bot3',
   'none',
   'none',
-].map((defaultValue, i) => new UserSelector(i, $('#user-selectors'), defaultValue))
+].map((defaultValue) => new UserSelector($('#user-selectors'), defaultValue))
 
 
 const decks = [

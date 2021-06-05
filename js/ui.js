@@ -388,7 +388,8 @@ class Pile {
 }
 
 class UserSelector {
-  constructor(i, parent, defaultVal) {
+  constructor(parent, defaultVal) {
+    UserSelector.list = [...(UserSelector.list || []), this] 
     // const [ver, hor] = indexToCorner(i)
     // const x = ver * 0.51
     // const y = hor * 0.51
@@ -477,7 +478,18 @@ class UserSelector {
   }
 
   add () {
-    this.value = 'bot' + this._lvler.value
+    const val = this.predVal()
+    this.value = val === 'none'
+      ?  ['user', 'bot'+this._lvler.value][0]
+      : val
+  }
+
+  predVal () { // value of userSelector before me
+    const i = UserSelector.list.indexOf(this)
+    if (i === 0) {
+      return 'user'
+    }
+    return UserSelector.list[i-1].value
   }
 
   remove () {
