@@ -103,6 +103,8 @@ html, body {
 }
 .middle {
   grid-column: 3 / span 4;
+}
+.upper {
   grid-row: 3 / span 1;
 }
 
@@ -120,11 +122,13 @@ html, body {
   display: flex;
   justify-self: center;
   align-items: center;
-  /* width: 100px; */
-  /* height: 100px; */
   position: relative;
   margin: 20px;
 }
+.user-selector:nth-child(1) { order: 2; }
+.user-selector:nth-child(2) { order: 3; }
+.user-selector:nth-child(3) { order: 4; }
+.user-selector:nth-child(4) { order: 1; }
 
 .user-selector.none::before {
   content: '+';
@@ -185,6 +189,12 @@ html, body {
   display: inline-block;
 }
 
+#user-selectors .user-selector:hover input[type=range] {
+  opacity: 1;
+}
+#user-selectors:hover input[type=range] {
+  opacity: 0.5;
+}
 input[type=range] {
   -webkit-appearance: none;
   background: transparent;
@@ -192,6 +202,8 @@ input[type=range] {
   height: 18px;
   overflow: hidden;
   cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
 }
 input[type=range]::-moz-range-thumb {
   background: white;
@@ -581,7 +593,7 @@ button:disabled {
         <h1>Pexeso</h1>
       </a>
     </div>
-    <div class="middle">
+    <div class="upper middle">
       <!-- <label>Hráči</label> -->
       <div id="user-selectors">
       </div>

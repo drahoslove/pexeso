@@ -485,12 +485,17 @@ class UserSelector {
       : val
   }
 
-  predVal () { // value of userSelector before me
+  predVal () { // value of userSelector before me or none if all are none
     const i = UserSelector.list.indexOf(this)
-    if (i === 0) {
-      return 'user'
-    }
-    return UserSelector.list[i-1].value
+    let j = i
+    let val = 'none'
+    do {
+      j--
+      j += 4
+      j %= 4
+      val = UserSelector.list[j].value
+    } while (j !== i && val === 'none')
+    return val
   }
 
   remove () {
