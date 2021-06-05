@@ -613,8 +613,6 @@ button:disabled {
 
 const pexeso = new Pexeso()
 
-// create piles
-const piles = [0,1,2,3].map(i => new Pile(i, $('#app')))
 
 // create user selectors
 const userSelectors = [
@@ -624,6 +622,8 @@ const userSelectors = [
   'none',
 ].map((defaultValue) => new UserSelector($('#user-selectors'), defaultValue))
 
+// create piles
+const piles = [0,1,2,3].map(i => new Pile(i, $('#app'), userSelectors[i]))
 
 const decks = [
   [8, 8],

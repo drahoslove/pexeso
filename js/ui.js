@@ -331,8 +331,9 @@ class Deck {
 }
 
 class Pile {
-  constructor (i, parent, name='') {
+  constructor (i, parent, userSelector) {
     this.stack = []
+    this.userSelector = userSelector
 
     const [ver, hor] = indexToCorner(i)
     const x = ver * 1
@@ -353,7 +354,7 @@ class Pile {
     pileBox.appendChild(nameEl)
 
     this.nameEl = nameEl
-    this.setName(name)
+    this.setName('')
   }
 
   empty () {
