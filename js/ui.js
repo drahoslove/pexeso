@@ -430,6 +430,7 @@ class UserSelector {
     locator.type = 'checkbox'
     locator.onchange = (e) => {
       this._el.style.setProperty('--mark', `'${LOCS[+this._locator.checked]}`)
+      this.forceLocalUser()
     }
     selector.append(locator)
     const locatorLabel = document.createElement('label')
@@ -486,6 +487,7 @@ class UserSelector {
     if (this._type === 'none') {
       this._el.style.removeProperty('--mark')
     }
+    this.forceLocalUser()
     setTimeout(() => {
       const icon = {
         user: '👤',
@@ -508,13 +510,26 @@ class UserSelector {
     }, 75)
   }
 
+  forceLocalUser () {
+    // ensure at least one user0
+    if (
+      UserSelector.list.every(({ value }) => value !== 'user0') && 
+      UserSelector.list.some(({ value }) => value === 'user1')
+    ) {
+      const user = UserSelector.list.find(selector => selector !== this && selector.value === 'user1') || this
+      user.value = 'user0'
+    }
+  }
+
   toggle() {
     if (this._type === 'bot') {
-      return this.value = 'user' + (+this._locator.checked)
-    }
+      const hasLocal = UserSelector.list.filter(({ value }) => value === 'user0').length > 0
+      this.value = 'user' + (hasLocal ? 1 : 0)
+    } else
     if (this._type === 'user') {
-      return this.value = 'bot' + (this._lvler.value)
+      this.value = 'bot' + (this._lvler.value)
     }
+    this.forceLocalUser()
   }
 
   add () {
@@ -522,6 +537,14 @@ class UserSelector {
     this.value = val === 'none'
       ?  ['user'+ +this._locator.checked, 'bot'+this._lvler.value][0]
       : val
+
+    if (val === 'user0') {
+      this.value = 'user1'
+    }
+    // if no local user - add it
+    if (UserSelector.list.filter(({ value }) => value === 'user0').length === 0) {
+      this.value ='user0'
+    }
   }
 
   predVal () { // value of userSelector before me or none if all are none
