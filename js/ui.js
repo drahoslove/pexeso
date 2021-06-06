@@ -1,3 +1,8 @@
+const isMobileDevice = () => {
+
+}
+
+
 class Card {
   constructor(deck, x, y, twosided) {
     this.deck = deck
@@ -389,6 +394,7 @@ class Pile {
 }
 
 const LVLS = '12345' || '○◔◑◕⬤' || '⋅︰⁖⁘⁙'
+const LOCS = [' ','🌐']
 class UserSelector {
   constructor(parent, defaultVal) {
     UserSelector.list = [...(UserSelector.list || []), this] 
@@ -415,13 +421,26 @@ class UserSelector {
     lvler.step = 1
     lvler.onchange = (e) => {
       const lvl = e.target.value
-      this._el.style.setProperty('--lvl', `'${LVLS[lvl-1]}'`)
+      this._el.style.setProperty('--mark', `'${LVLS[lvl-1]}'`)
     }
     selector.append(lvler)
+
+    const locator = document.createElement('input')
+    locator.id = `locator-${UserSelector.list.length}`
+    locator.type = 'checkbox'
+    locator.onchange = (e) => {
+      this._el.style.setProperty('--mark', `'${LOCS[+this._locator.checked]}`)
+    }
+    selector.append(locator)
+    const locatorLabel = document.createElement('label')
+    locatorLabel.setAttribute('for', locator.id)
+    selector.append(locatorLabel)
+
     
     const pseudoDeck = {el: selector}
     
     this.card = new Card(pseudoDeck, 0, 0, true)
+    this._locator = locator
     this._lvler = lvler
 
     this._type = 'none'
@@ -437,16 +456,20 @@ class UserSelector {
   }
 
   get value() {
-    if (['user', 'none'].includes(this._type)) {
-      return this._type
+    if (this._type === 'none') {
+      return 'none'
     }
     if (this._type === 'bot') {
-      return this._type + this._lvler.value
+      return this._type + +this._lvler.value
+    }
+    if (this._type === 'user') {
+      return this._type + +this._locator.checked
     }
     return ''
   }
-  set value(val) {
-    if (['user', 'none'].includes(val)) {
+
+  set value(val) { // 'user0' = local user; 'user1' = remote user 'bot1' = bot level 1
+    if (val === 'none') {
       this._type = val
     }
     if (val.startsWith('bot')) {
@@ -454,35 +477,42 @@ class UserSelector {
       this._type = 'bot'
       this._lvler.value = lvl
     }
+    if (val.startsWith('user')) {
+      const location = +val.substr(4)
+      this._type = 'user'
+      this._locator.checked = !!location
+    }
     this.card.flip()
-    if (this._type !== 'bot') {
-      this._el.style.removeProperty('--lvl')
+    if (this._type === 'none') {
+      this._el.style.removeProperty('--mark')
     }
     setTimeout(() => {
       const icon = {
         user: '👤',
         bot: '🤖',
       }[this._type] || ''
-      this.card._el.style.setProperty('--user-name', `'${icon}'`)
-      this._el.style.setProperty('--lvl', `'${LVLS[this._lvler.value-1]}'`)
-      if (val === 'none') {
-        this._el.classList.add('none')
-      } else {
-        this._el.classList.remove('none')
-      }
+      this.card._el.style.setProperty('--user-icon', `'${icon}'`)
       if (this._type === 'bot') {
-        this._el.classList.add('bot')
-      } else {
-        this._el.classList.remove('bot')
+        this._el.style.setProperty('--mark', `'${LVLS[this._lvler.value-1]}'`)
       }
+      if (this._type === 'user') {
+        this._el.style.setProperty('--mark', `'${LOCS[+this._locator.checked]}`)
+      }
+      ;['none', 'bot', 'user'].forEach(name => {
+        if (this._type === name) {
+          this._el.classList.add(name)
+        } else {
+          this._el.classList.remove(name)
+        }
+      })
     }, 75)
   }
 
   toggle() {
-    if ((this.value).includes('bot')) {
-      return this.value = 'user'
+    if (this._type === 'bot') {
+      return this.value = 'user' + (+this._locator.checked)
     }
-    if (this.value === 'user') {
+    if (this._type === 'user') {
       return this.value = 'bot' + (this._lvler.value)
     }
   }
@@ -490,7 +520,7 @@ class UserSelector {
   add () {
     const val = this.predVal()
     this.value = val === 'none'
-      ?  ['user', 'bot'+this._lvler.value][0]
+      ?  ['user'+ +this._locator.checked, 'bot'+this._lvler.value][0]
       : val
   }
 

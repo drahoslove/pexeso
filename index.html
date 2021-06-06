@@ -181,21 +181,58 @@ html, body {
   opacity: 0;
 }
 
-.user-selector input {
+/* toggler */
+.user-selector input[type=checkbox] {
   display: none;
-  position: absolute;
-  bottom: -25px;
-  width: 100%;
 }
-.user-selector.bot input {
+.user-selector label {
+  display: none;
+}
+.user-selector.user label {
   display: inline-block;
+  position: absolute;
+  bottom: -31px;
+  left: 0;
+  right: 0;
+  margin: 0;
+  width: 60%;
+  margin: 0 auto;
+  font-size: 16px;
+  cursor: pointer;
+  height: 24px;
+  background: white;
+  border-radius: 100px;
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
 }
-
-.user-selector::after {
-  content: var(--lvl);
+.user-selector label::before {
+  content: '💻';
+  position: absolute;
+  left: 4px;
+}
+.user-selector label::after {
+  content: '🌐';
   position: absolute;
   right: 4px;
-  bottom: 4px;
+}
+.user-selector input:checked + label::before,
+.user-selector input:not(:checked) + label::after {
+  opacity: 0.25;
+}
+
+#user-selectors .user-selector:hover label {
+  opacity: 1;
+}
+#user-selectors:hover label {
+  opacity: 0.5;
+}
+
+/* lvl/lcoation number on card */
+.user-selector::after {
+  content: var(--mark);
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
   width: 1em;
   height: 1em;
   color: var(--blue);
@@ -205,9 +242,21 @@ html, body {
   justify-content: center;
   align-items: center;
   pointer-events: none;
+  font-size: 20px;
 }
-.user-selector.bot::after {
+.user-selector:not(.none)::after {
   visibility: visible;
+}
+
+/* lvler */
+.user-selector input[type=range] {
+  display: none;
+  position: absolute;
+  bottom: -28px;
+  width: 100%;
+}
+.user-selector.bot input[type=range] {
+  display: inline-block;
 }
 
 #user-selectors .user-selector:hover input[type=range] {
@@ -350,7 +399,7 @@ h2 {
 
 label {
   font-size: 1.4rem;
-  margin: 0.5rem 0.5rem;
+  /* margin: 0.5rem 0.5rem; */
 }
 
 .form-group {
@@ -460,6 +509,7 @@ button:disabled {
   text-align: center;
   /* overflow: hidden; */
   text-overflow: ellipsis;
+  font-family: sans-serif;
 }
 .user-name.above {
   bottom: 140px;
@@ -505,7 +555,7 @@ button:disabled {
 .menu .card::after,
 .menu .card::before {
   background-image: none;
-  content: var(--user-name);
+  content: var(--user-icon);
   color: var(--blue);
   display: flex;
   justify-content: center;
@@ -774,13 +824,14 @@ async function play (deck) {
   const game = await pexeso.newGame(w, h, players, onUpdate)
 
   // init selected decks d piles
-  const humans = players.filter(p => p === 'user').length
-  let conter = 0
+  const humans = players.filter(p => p === 'user0' || p === 'user1').length
+  let counter = 0
   players
     .map((p, i) => {
       if (p === 'none') return ''
-      if (p === 'user') return humans === 1 ? 'Ty' : `Hráč ${++conter}`
-      return  p.replace('bot', 'Robot ') 
+      if (p === 'user0') return humans === 1 ? '👤' : `👤💻`
+      if (p === 'user1') return `👤🌐`
+      return  p.replace('bot', '🤖 ˡᵛˡ')
     })
     .forEach((name, i) => {
       piles[i].setName(name)

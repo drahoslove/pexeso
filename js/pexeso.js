@@ -44,7 +44,7 @@ class Pexeso {
 
     return { // return set of public methods
       tryCard: (x, y) => {
-        if (players[game.activePlayer()] === 'user') {
+        if (players[game.activePlayer()] === 'user0') {
           const i = this.toI({x, y}, w, h)
           if (game.two) {
             game.checkPair()
