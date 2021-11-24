@@ -50,6 +50,7 @@ export default class Room {
         users: room.getPublicUsers(),
       }))
   }
+
   constructor(roomId: RoomId) { // ${}
     const [_, uuuu] = roomId.split(':')
     const op: Human = { type: 'human' , isOp: true }

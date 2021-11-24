@@ -1,12 +1,15 @@
-const $ = document.querySelector.bind(document)
-const $$ = document.querySelectorAll.bind(document)
+export const $ = document.querySelector.bind(document)
+export const $$ = document.querySelectorAll.bind(document)
 
 
-const rand = (n) => Math.floor(Math.random()*n)
+export const rand = (n) => Math.floor(Math.random()*n)
+
+// use as filter to randomize array
+export const randomize = () => rand(2) - 0.5
 
 // returns pair of +- ones to indicate corner
 // indexed from top left goin clockwise: --, -+, ++, +- 
-const indexToCorner = (i) => {
+export const indexToCorner = (i) => {
   i+=2
   i%=4
   return [
@@ -15,14 +18,12 @@ const indexToCorner = (i) => {
   ] 
 }
 
-// use as filter to randomize array
-const randomize = () => rand(2) - 0.5
 
-const wait = async (t) => new Promise((resolve) => {
+export const wait = async (t) => new Promise((resolve) => {
   setTimeout(resolve, t)
 })
 
-const ondemandRandomList = (values) => {
+export const ondemandRandomList = (values) => {
   const len = values.length
   let known = []
   return new Proxy(known, {
@@ -38,3 +39,5 @@ const ondemandRandomList = (values) => {
     },
   })
 }
+
+

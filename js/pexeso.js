@@ -1,4 +1,6 @@
-class Pexeso {
+import { rand, randomize, ondemandRandomList } from "./tools.js"
+
+export default class Pexeso {
   constructor() {
     // test
     // console.assert(this.toI({...this.toXY(3)}) === 3, 'ee')

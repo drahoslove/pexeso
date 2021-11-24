@@ -80,7 +80,7 @@ gameNS.on('connect', async (socket: Socket & { secret?: string }) => {
     try {
       myself = room.join(secret) // take your place in a room
     } catch (e) {
-      return err(socket, e)
+      return err(socket, String(e))
     }
   }
 
