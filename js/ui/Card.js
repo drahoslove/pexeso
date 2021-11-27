@@ -1,4 +1,4 @@
-import { wait } from '../tools.js'
+import { wait, indexToCorner } from '../tools.js'
 
 export default class Card {
   constructor(deck, x, y, twosided) {

@@ -10,20 +10,30 @@ const {
 	SALT = 'SALT',
   PASS = 'PASS',
 } = process.env
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3003
 
 const io = new Server(PORT, {
   serveClient: false,
-  allowRequest: (origin, callback) => {
-    if (!ORIGINS.includes(origin.toString())) {
-      return callback('origin not allowed', false);
-    }
-    callback(null, true)
-  }
+	cors: {
+		origin: ORIGINS,
+	}
+  // allowRequest: (origin, callback) => {
+  //   if (!ORIGINS.includes(origin.toString())) {
+	// 		console.log('origin not allowed', origin.toString())
+  //     return callback('origin not allowed', false)
+  //   }
+  //   callback(null, true)
+  // }
 })
 
 const rooms: {[id: string]: Room} = {
-	['test']: new Room('test:Uu-3')
+	['test1']: new Room('test1:Uu-3', 'xxxxx'),
+	['test2']: (() => {
+		const room = new Room('test2:Uuu4', 'yyyyy')
+		room.state = 'playing'
+		room.users.forEach(u => { if (u?.type === 'human') u.secret = 'abcd'} )
+		return room
+	})(),
 }
 
 console.log('listening', PORT)
@@ -66,7 +76,7 @@ gameNS.on('connect', async (socket: Socket & { secret?: string }) => {
 	}
 
   const room: Room = !(roomId in rooms)
-    ? new Room(roomId as RoomId)
+    ? new Room(roomId as RoomId, secret)
     : rooms[roomId]
 
   if (!room) {

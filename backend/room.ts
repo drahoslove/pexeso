@@ -31,7 +31,7 @@ export default class Room {
   firstGoes: number
   actions: any[] // TODO
   restarts: number
-  state: 'lobby' | 'game'
+  state: 'waiting' | 'playing' | 'done'
 
   static allRooms: {[id: string]: Room} = {}
   static genId(){
@@ -43,17 +43,18 @@ export default class Room {
   }
 
   static getLobby() {
-    Object.entries(Room.allRooms)
-      .filter(([_, { state }]) => state === 'lobby')
+    return Object.entries(Room.allRooms)
+      .filter(([_, { state }]) => ['waiting', 'playing'].includes(state))
       .map(([roomId, room]) => ({
         id: roomId,
         users: room.getPublicUsers(),
+        state: room.state,
       }))
   }
 
-  constructor(roomId: RoomId) { // ${}
+  constructor(roomId: RoomId, secret: string) { // ${}
     const [_, uuuu] = roomId.split(':')
-    const op: Human = { type: 'human' , isOp: true }
+    const op: Human = { type: 'human' , isOp: true, secret }
     const users = uuuu.split('').map((u): User => {
       // U is op user
       // u is another user slot
@@ -63,12 +64,14 @@ export default class Room {
         'U': op,
         'u': { type: 'human' } as Human,
         '-': null,
-      }[u] || { type: 'bot', level: +u, } as Bot
+      }[u]
+      || '12345'.includes(u) && { type: 'bot', level: +u, } as Bot
+      || null
     })
 
   
-    this.id = Room.genId()  + uuuu
-    this.state = 'lobby'
+    this.id = Room.genId() + ':' + uuuu
+    this.state = 'waiting'
     this.users = users
     this.firstGoes = 0
     this.actions = []
@@ -107,6 +110,9 @@ export default class Room {
       }),
       ...(u && u.type === 'bot' && {
         level: u.level,
+      }),
+      ...(u.isOp && {
+        isOp: true,
       })
     }))
   }

@@ -4,8 +4,9 @@ import Pexeso from './pexeso.js'
 import Pile from './ui/Pile.js'
 import Deck from './ui/Deck.js'
 import UserSelector from './ui/UserSelector.js'
+import RoomSelector from './ui/RoomSelector.js'
 import EndScreen from './ui/EndScreen.js'
-
+import { watchLobby } from './io.js'
 
 const pexeso = new Pexeso()
 
@@ -45,6 +46,27 @@ let isFirst = true
 const menus = $$('.menu')
 
 const endScreen = new EndScreen($('#results'), piles)
+
+
+watchLobby((lobbyData) => {
+  const waitingList = $('#waiting-list')
+  const playingList = $('#playing-list')
+  waitingList.innerText = ''
+  playingList.innerText = ''
+  const waitingGames = lobbyData.filter(({ state }) => state === 'waiting')
+  const playingGames = lobbyData.filter(({ state }) => state === 'playing')
+
+  waitingGames.map(room => new RoomSelector(waitingList, room))
+  if (waitingGames.length === 0) {
+    waitingList.innerHTML = `<div class='empty'>Nikdo zrovna nečeká na hráče</div>`
+  }
+  playingGames.map(room => new RoomSelector(playingList, room))
+  if (playingGames.length === 0) {
+    playingList.innerHTML = `<div class='empty'>Nikdo zrovna nehraje online</div>`
+  }
+})
+
+
 
 async function play (deck) {
   // rederegister button events

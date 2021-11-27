@@ -15,3 +15,9 @@ export function randomToken(n: number) {
 export const md5 = (txt: string) => createHash('md5').update(txt).digest('hex')
 
 export const rand = (n: number) => Math.floor(Math.random()*n)
+
+const t = (pcs: Array<string>, ...vals: Array<any>) => vals
+	.reduce(
+		(txt, val, i) => txt + val + pcs[i+1].toUpperCase(),
+		pcs[0].toUpperCase(),
+	)
