@@ -1,5 +1,5 @@
 import { wait, randomize } from '../tools.js'
-import Card from './Card.js'
+import Card, { CCard } from './Card.js'
 
 
 export default class Deck {
@@ -53,7 +53,7 @@ export default class Deck {
     for (let j = 0; j < h; j++) {
       this.grid[j] = []
       for (let i = 0; i < w; i++) {
-        const card = new Card(this, i, j)
+        const card = new CCard(this, i, j)
         this.cards.add(card)
         this.grid[j][i] = card
       }

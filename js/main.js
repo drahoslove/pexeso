@@ -13,12 +13,30 @@ const pexeso = new Pexeso()
 
 
 // create user selectors
-const userSelectors = [
+const selectedUsers = [
   'user',
   'bot3',
   'none',
   'none',
-].map((defaultValue) => new UserSelector($('#user-selectors'), defaultValue))
+]
+const selectUser = (val, j) => {
+  selectedUsers[j] = val
+  renderUserSelectors()
+}
+
+const renderUserSelectors = () => {
+  render(
+    selectedUsers.map((defaultValue, i) => (
+      html`<${UserSelector}
+        i=${i}
+        value=${defaultValue}
+        allUsers=${selectedUsers}
+        onChange=${(val, j=i) => { selectUser(val, j)}}
+      />`
+    )),
+    $('#user-selectors'),
+  )
+}
 
 // create piles
 const piles = [0,1,2,3].map(i => ({name: '', stack: []}))
@@ -31,6 +49,8 @@ const renderPiles = (props) =>
     $('#piles'),
   )
 
+
+renderUserSelectors()
 
 const decks = [
   [8, 8],
@@ -124,7 +144,7 @@ async function play (deck) {
 
   const {w, h} = deck
   // init game logic
-  const players = userSelectors.map(s => s.value)
+  const players = [...selectedUsers]
 
   // function handling incoming game events
   const onUpdate = (data) => {
