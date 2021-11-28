@@ -1,3 +1,4 @@
+import { html, render } from 'https://unpkg.com/htm/preact/standalone.module.js'
 import { $, $$, wait } from './tools.js'
 
 import Pexeso from './pexeso.js'
@@ -20,7 +21,16 @@ const userSelectors = [
 ].map((defaultValue) => new UserSelector($('#user-selectors'), defaultValue))
 
 // create piles
-const piles = [0,1,2,3].map(i => new Pile(i, $('#app'), userSelectors[i]))
+const piles = [0,1,2,3].map(i => ({name: '', stack: []}))
+
+const renderPiles = (props) =>
+  render(
+    props.map(({i, name, highlighted}) =>
+      html`<${Pile} ...${{i, name, highlighted}} />`
+    ),
+    $('#piles'),
+  )
+
 
 const decks = [
   [8, 8],
@@ -45,25 +55,24 @@ let isFirst = true
 
 const menus = $$('.menu')
 
-const endScreen = new EndScreen($('#results'), piles)
-
 
 watchLobby((lobbyData) => {
-  const waitingList = $('#waiting-list')
-  const playingList = $('#playing-list')
-  waitingList.innerText = ''
-  playingList.innerText = ''
   const waitingGames = lobbyData.filter(({ state }) => state === 'waiting')
   const playingGames = lobbyData.filter(({ state }) => state === 'playing')
 
-  waitingGames.map(room => new RoomSelector(waitingList, room))
-  if (waitingGames.length === 0) {
-    waitingList.innerHTML = `<div class='empty'>Nikdo zrovna nečeká na hráče</div>`
-  }
-  playingGames.map(room => new RoomSelector(playingList, room))
-  if (playingGames.length === 0) {
-    playingList.innerHTML = `<div class='empty'>Nikdo zrovna nehraje online</div>`
-  }
+  render(
+    waitingGames.length === 0
+      ? html`<div class='empty'>Nikdo zrovna nečeká na hráče</div>`
+      : waitingGames.map(room => html`<${RoomSelector} roomInfo=${room} />`),
+    $('#waiting-list'),
+  )
+
+  render(
+    playingGames.length === 0
+      ? html`<div class='empty'>Nikdo zrovna nečeká na hráče</div>`
+      : playingGames.map(room => html`<${RoomSelector} roomInfo=${room} />`),
+    $('#playing-list')
+  )
 })
 
 
@@ -81,7 +90,8 @@ async function play (deck) {
   }
 
   $('#reset-button').onclick = async (e) => {
-    endScreen.hide()
+    render(null, $('#results'))
+
     e.target.disabled = true
     $('#shuffle-button').disabled = true
 
@@ -97,17 +107,17 @@ async function play (deck) {
       deck.show()
     })
     // reset piles
-    piles.forEach(pile => {
-      pile.lowlight()
-      pile.setName('')
-    })
+    piles.forEach(pile => { pile.name = '' })
+    renderPiles(piles.map(({name}, i) => ({i,  name, highlighted: false})))
     game.end()
-    endScreen.hide()
+    render(null, $('#results'))
+
     menus[0].setAttribute('hidden', false)
     menus[1].setAttribute('hidden', true)
     await wait(500)
   }
-  endScreen.hide()
+  render(null, $('#results'))
+
 
   // inits:
 
@@ -124,17 +134,11 @@ async function play (deck) {
       return
     }
     if (user !== undefined) {
-      piles.forEach((pile, i) => {
-        if (i === user) {
-          pile.highlight()
-        } else {
-          pile.lowlight()
-        }
-      })
+      renderPiles(piles.map(({name}, i) => ({i, name, highlighted: i === user})))
       return
     }
     if (end) {
-      endScreen.show()
+      render(html`<${EndScreen} piles=${piles} />`, $('#results'))
       return
     }
     if (x !== undefined && y !== undefined) {
@@ -164,7 +168,7 @@ async function play (deck) {
       return  p.replace('bot', '🤖 ˡᵛˡ ')
     })
     .forEach((name, i) => {
-      piles[i].setName(name)
+      piles[i].name = name
     })
 
   deck.onCardClick = (card) => {

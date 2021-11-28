@@ -124,7 +124,7 @@ export default class Deck {
       }
     }
     this.piles.forEach(pile => { // remove cards from piles
-      pile.empty()
+      pile.stack = []
     })
     await Promise.all([
       instant || wait(600),

@@ -68,16 +68,16 @@ export default class Card {
     }
 
     const pile = piles[pileIndex]
-    if (!pile.getName()) { // pile without player
+    if (!pile.name) { // pile without player
       return
     }
 
     const [ver, hor] = indexToCorner(pileIndex)
 
-    const x = ver * 5.31 + (0.005 * pile.size())
-    const y = hor * 2.84 + (0.01 * pile.size())
+    const x = ver * 5.31 + (0.005 * pile.stack.length)
+    const y = hor * 2.84 + (0.01 * pile.stack.length)
     
-    pile.add(this)
+    pile.stack.push(this)
     
     // resize card to unified diemnsions
     this.el.classList.add('piled')
@@ -90,7 +90,7 @@ export default class Card {
     this.el.style.setProperty('--y', y)
     await wait(400)
     if (this.deck.packed) return
-    this.el.style.setProperty('--elevation', pile.size())
+    this.el.style.setProperty('--elevation', pile.stack.length)
     // this.el.style.removeProperty('--elevation')
   }
 }

@@ -526,6 +526,9 @@ button:disabled {
   left: 50%;
   transition: opacity 1s ease;
 }
+#piles {
+  display: flex;
+}
 
 .pile-frame {
   position: absolute;
@@ -731,11 +734,7 @@ button:disabled {
       </button>
     </div>
     <div class="middle">
-      <div id="results" class="results" hidden="true">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
+      <div id="results">
       </div>
     </div>
     <div class="right-buttons">
@@ -744,6 +743,7 @@ button:disabled {
       </button>
     </div>
   </form>
+  <div id="piles"></div>
 </div>
 <script type="module" src="js/main.js"></script>
 </body>

@@ -1,29 +1,27 @@
-export default class RoomSelector {
-  constructor(parent, roomInfo) {
-    const { id, users } = roomInfo
+import { html, Component } from 'https://unpkg.com/htm/preact/standalone.module.js'
 
-    const selector = document.createElement('div')
-    selector.className = 'paper'
-    parent.appendChild(selector)
-    this._el = selector
-
-
-    selector.innerHTML = users
-      .filter(Boolean)
-      .map(({ type, level, empty, nick }) => (`
-        <div>
-        ${
-          (type === 'human') && (
-            '👤 ' + (!empty
-              ? (nick || 'Anon')
-              : '<i>___ ❓</i>')
-          ) ||
-          (type === 'bot' && (
-            '🤖 Bot úrovně ' + level)
-          ) ||
-          ''
+export default class RoomSelector extends Component {
+  render({ roomInfo }) {
+    const { users } = roomInfo
+    return html`
+      <div class="paper">
+        ${users
+          .filter(Boolean)
+          .map(({ type, level, empty, nick }) => html`
+            <div>
+              ${type === 'human' && (
+                html`👤 ${(!empty
+                  ? (nick || 'Anon')
+                  : html`<i>___ ❓</i>`
+                )}`
+              )}
+              ${type === 'bot' && (
+                '🤖 Bot úrovně ' + level
+              )}
+            </div>
+          `)
         }
-        </div>
-    `)).join('<br />')
+      </div>
+    `
   }
 }
