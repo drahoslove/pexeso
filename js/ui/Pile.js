@@ -23,7 +23,7 @@ export default class Pile extends Component {
           x < 0 ? 'left' : 'right',
           highlighted && 'highlighted',
         ].join(' ')}">
-        ${name}
+          ${name}
         </div>
       </div>
     `

@@ -10,6 +10,7 @@ const LOCS = [' ','🌐']
 export default class UserSelector extends Component {
   state = {
     lastLvl: 3,
+    rotated: false,
   }
   componentDidMount () {
     this.setVal(this.props.value)
@@ -115,7 +116,7 @@ export default class UserSelector extends Component {
     })
   }
 
-  render({i},{mark, typeClass}) {
+  render({i},{mark, rotated, typeClass}) {
     const icon = {
       user: '👤',
       bot: '🤖',
@@ -156,7 +157,9 @@ export default class UserSelector extends Component {
             }
           }}
         >
-          <${Card} x=${0} y=${0} userIcon=${icon} twosided />
+          <${Card} x=${0} y=${0} userIcon=${icon} rotated=${rotated} twosided
+            rotate=${(rotated) => { this.setState({ rotated })}}
+          />
         </div>
       </div>
     `

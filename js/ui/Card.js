@@ -6,13 +6,16 @@ export default class Card extends Component {
   state = {
     elevation: 15,
     image: undefined,
-    rotated: false,
     userIcon: ''
   }
   componentDidMount () {
     const {x, y} = this.props
-    this.move(x, y, 0, true)
     this.flip(undefined, this.props.userIcon, false)
+    wait(75).then(() => {
+      this.setState({
+        elevation: 0,
+      })
+    })
   }
 
   componentDidUpdate(prevProps) {
@@ -24,25 +27,23 @@ export default class Card extends Component {
   }
 
   flip = async (image, userIcon, force) => {
-    const { deck, twosided } = this.props
-    if (!force && deck && deck.packed) return
+    const { deckPacked, twosided, rotate } = this.props
+    if (!force && deckPacked) return
     this.setState({
       elevation: 15,
     })
     // await wait(150)
     if (twosided) {
-      this.setState({
-        rotated: !this.state.rotated
-      })
+      rotate(!this.props.rotated)
     } else {
       if (image === undefined) {
+        rotate(false)
         this.setState({
-          rotated: false,
           image: undefined,
         })
       } else {
+        rotate(true)
         this.setState({
-          rotated: true,
           image,
         })
       }
@@ -52,32 +53,29 @@ export default class Card extends Component {
       userIcon,
     })
     await wait(75)
-    if (deck && deck.packed) return
+    if (deckPacked) return
     this.setState({
       elevation: undefined,
     })
   }
 
-  move = async (x, y, elevation, instant) => {
-    this.setState({
-      elevation: elevation + 34,
-    })
-
-    instant ||  await wait(350)
-    this.setState({ elevation: elevation || undefined})
-  }
-
   render (
-    {deck, x, y, twosided},
-    {elevation, image, rotated, userIcon},
+    {deck, x, y, w, h, z, twosided, piled, rotated},
+    {elevation, image, userIcon},
   ){
     return html`
       <div
-        class="card ${rotated ? 'rotated' : ''}"
+        class="
+          card
+          ${rotated ? 'rotated' : ''}
+          ${piled ? 'piled' : ''}
+        "
         style="
           --x: ${x};
           --y: ${y};
-          ${elevation !== undefined ? `--elevation: ${elevation};`: ''}
+          --elevation: ${(elevation||0)+(z||0)};
+          ${w ? `--card-width: ${w}px;` : ''}
+          ${h ? `--card-height: ${w}px;` : ''}
           ${userIcon !== undefined ? `--user-icon: '${userIcon}';`: ''}
           ${image ? `--image: ${image};`: ''}
         "

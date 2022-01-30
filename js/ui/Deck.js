@@ -1,8 +1,199 @@
+import { Component, html, render } from 'https://unpkg.com/htm/preact/standalone.module.js'
+
 import { wait, randomize } from '../tools.js'
 import Card, { CCard } from './Card.js'
 
 
-export default class Deck {
+export default class Deck extends Component {
+  constructor(props) {
+    super(props)
+    const { w, h } = props
+    const cards = new Set()
+    const grid = []
+    for (let j = 0; j < h; j++) {
+      grid[j] = []
+      for (let i = 0; i < w; i++) {
+        const card = {
+          x: i, y: j, rotated: false,
+        }
+        cards.add(card)
+        grid[j][i] = card
+      }
+    }
+    this.state = {
+      grid,
+      cards,
+      packed: false,
+    }
+    this.grid = grid
+    this.pack(true)
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.packed === !prevProps.packed) {
+      this.props.packed
+        ? this.pack()
+        : this.unpack()
+    }
+  }
+
+
+  toPos(x,y){
+    const {w, h} = this.props
+    return {
+      x: x - w/2 + 0.5,
+      y: y - h/2 + 0.5,
+    }
+  }
+  cardAt (x, y) {
+    return this.state.grid[y][x]
+  }
+  updateCard = (j, i, cardData) => {
+    const { grid } = this
+    const newGrid = grid.map((line) => line.map((card) => ({...card}))) // clone grid
+    newGrid[i][j] = {
+      ...(newGrid[i][j]),
+      ...cardData,
+    }
+    this.grid = newGrid
+    this.setState({
+      grid: newGrid,
+    })
+  }
+  
+  moveCard = async (j, i, {x, y, z}, instant) => {
+    this.updateCard(j, i, {x, y, z: z + 34})
+    instant || await wait(350)
+    this.updateCard(j, i, { z })
+  }
+
+  rotateCard = async (j, i, rotation) => {
+    this.updateCard(j, i, {
+      rotation,
+    })
+  }
+
+  async pack (instant = true) {
+    const {w, h, x, y, piles, updatePileStack} = this.props
+    // this.setState({ packed: true })
+    let size = 0
+    const animationMoves = [] // to be animated
+    for (let i = h-1; i >=0; i--) {
+      for (let j = w-1; j >=0; j--) {
+        // adjust offest to make 3D effect
+        const xx = x + (0.005 * size)/2
+        const yy = y + (0.01 * size)/1.2
+        size++
+        ;(async (i, j, x, y, z) => {
+          this.updateCard(j, i, {
+            piled: true,
+            w: undefined,
+            h: undefined,
+            faceDown: undefined,
+          })
+          animationMoves.push(
+            this.moveCard(j, i, {
+              x,
+              y,
+              z,
+            }, instant)
+          )
+          if (!instant) await wait(10)
+        })(i, j, xx, yy, size)
+      }
+    }
+    piles.forEach((pile, i) => { // remove cards from piles
+      updatePileStack(i, [])
+    })
+    await Promise.all([
+      instant || wait(600),
+      ...animationMoves,
+    ])
+    // instant || (await wait(200))
+    this.setState({ packed: true })
+  }
+  async unpack (instant=false) {
+    const {w, h} = this.props
+    this.setState({ packed: false }) // will hide deck-name
+    const animationMoves = []
+    let edge = 80 - (Math.max(w,h) - 8) * 10
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
+        ;(async (j, i, edge) => {
+          this.updateCard(j, i, {
+            piled: false,
+            w: edge,
+            h: edge,
+          })
+          animationMoves.push(
+            this.moveCard(j, i, {
+              ...this.toPos(j, i),
+              z: 0,
+            }, instant)
+          )
+        })(j, i, edge)
+        if(!instant) await wait(15)
+      }
+    }
+    await Promise.all([
+      ...animationMoves,
+    ])
+    this.setState({ packed: false, })
+  }
+
+  cardOf (el) {
+    const { w, h } = this.props
+    const index = [el.parentElement.children].indexOf(el)
+    const i = index % w
+    const j = (index - index % w)/h
+    return this.cardAt(i, j)
+  }
+
+  onClick = (e) => {
+    const { onPackClick, w, h } = this.props
+    const { packed } = this.state
+    if (e.target === e.currentTarget) {
+      // Firefox sometimes make this fire on the deck element instead of the card
+      if (packed) {
+        onPackClick({w, h}, this.updateCard)
+      }
+      return
+    }
+    const card = this.cardOf(e.target)
+    if (e.target.classList.contains('card')) {
+      if (packed) {
+        onPackClick({w, h}, this.updateCard)
+      } else {
+        this.onCardClick && this.onCardClick(card)
+      }
+    }
+  }
+  render ({w, h, visible}, {grid, packed}) {
+    return html`
+      <div
+        class="deck ${packed && 'packed'}"
+        style="
+          ${visible === false ? 'opacity: 0; pointer-events: none;' : ''}
+          --deck-name: '${w}×${h}';
+        "
+        onClick=${this.onClick}
+      >
+        ${
+          grid.map(line => line.map(({x, y, w, h, z, piled, rotated, ...rest}) => (
+            html`
+              <${Card}
+                ...${{...rest, x, y, w, h, z, piled, rotated}}
+                rotate=${(rotation) => this.rotateCard(x, y, rotation)}
+              />
+            `
+          )))
+        }
+      </div>
+    `
+  }
+}
+
+export class DDeck {
   constructor(
     app, // parent element
     w=6, h=6, // dimension of grid (number of cards)

@@ -23,22 +23,17 @@ export default class EndScreen extends Component {
     return html`
       <div class="results">
         ${
-          piles.map((pile, i) => {
-            const { name } = pile
-            const p = points[i]
-            if (!name) {
-              return null
-            }
-            return html`
+          piles.map((pile, i) => (
+            pile.name && html`
               <div
                 class="bar"
                 style="
-                  --name: '${name}';
-                  --points: ${p};
+                  --name: '${pile.name}';
+                  --points: ${points[i]};
                 "
               />
             `
-          }).filter(Boolean)
+          ))
         }
       </div>
     `

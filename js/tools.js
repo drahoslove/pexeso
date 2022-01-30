@@ -24,7 +24,8 @@ export const wait = async (t) => new Promise((resolve) => {
 })
 
 export const ondemandRandomList = (values) => {
-  const len = values.length
+  const vals = [...values] // make a copy of array
+  const len = vals.length
   let known = []
   return new Proxy(known, {
     get: (list, i) => {
@@ -32,8 +33,8 @@ export const ondemandRandomList = (values) => {
         return len
       }
       if (!(i in known)) {
-        values.sort(randomize)
-        known[i] = values.pop()
+        vals.sort(randomize)
+        known[i] = vals.pop()
       } 
       return known[i]
     },
